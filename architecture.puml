@@ -1,0 +1,14 @@
+@startuml
+
+participant "Frontend" as Frontend
+participant "Backend" as Backend
+participant "API" as API
+
+Frontend -> Frontend: Alege imagine
+Frontend -> Backend: Incarcă imaginea
+Backend -> API: Trimite imaginea
+API -> API: Extrage textul din imagine
+API -> Backend: Returnează textul extras
+Backend -> Frontend: Afișează textul extras
+
+@enduml
