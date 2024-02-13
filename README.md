@@ -18,6 +18,7 @@ experts.
   - [API Access](#api-access)
   - [Supported Image Formats](#supported-image-formats)  
   - [Multi-Language Support](#multi-language-support)
+  - [Output Formats](#output-formats)
   - [Configuration and API Key](#configuration-and-api-key)
   - [Usage and Pricing](#usage-and-pricing)
   - [Documentation and Support](#documentation-and-support)
@@ -29,36 +30,31 @@ experts.
 ![Application architecture](doc/media/architecture.png)
 
 # Text Extraction API
-- OCR.space uses the Tesseract OCR engine. Tesseract is an open-source OCR
-engine developed by Google. It is known for its accuracy in recognizing
-text in various languages and its ability to handle a wide range of
-fonts and text layouts.
-
-- The OCR.space service utilizes Tesseract as the underlying technology to
-perform optical character recognition on images or scanned documents,
-extracting text for further use. Tesseract has been widely adopted in
-the OCR community and has a reputation for being robust and reliable.
+- Google Cloud Handwriting Detection with Optical Character Recognition (OCR) is a service provided by Google Cloud Platform (GCP) that allows users to extract text from handwritten documents, such as scanned images or photos. Here's an overview of how it works:
 
 #### OCR Functionality:
--   OCR.space specializes in converting images or scanned documents into machine-readable text. It can recognize printed or handwritten text within images and provide the extracted text as output.
+-   The OCR functionality is designed to deliver high accuracy in text extraction, even from challenging handwritten documents. It employs state-of-the-art machine learning algorithms and large-scale training datasets to achieve robust performance. 
 
 #### API Access:
--   OCR.space provides an API (Application Programming Interface) that developers can use to programmatically interact with the OCR service. This allows integration into various platforms and programming languages.
+-   Users can access the Handwriting Detection OCR service programmatically through REST API endpoints provided by Google Cloud Platform. This allows for seamless integration into applications and workflows.
 
 #### Supported Image Formats:
--   OCR.space supports a variety of image formats, including common ones like JPEG, PNG, and GIF. It is designed to work with images that contain text, making it useful for applications where text extraction is required.
+-   Google Cloud Handwriting Detection OCR supports various image formats, including JPEG, PNG, and PDF. Users can upload scanned images or photos containing handwritten text for processing.
 
 #### Multi-Language Support:
--   The OCR.space service typically supports recognition in multiple languages. This is important for users who need OCR capabilities for documents in languages other than English.
+-   The OCR functionality supports multiple languages and scripts, allowing it to recognize handwritten text in various languages worldwide. This includes languages with complex scripts like Chinese, Japanese, and Arabic.
+
+#### Output Formats: 
+- The extracted text is returned in structured formats such as plain text strings or JSON responses. This facilitates easy integration with downstream applications and systems for further processing and analysis.
 
 #### Configuration and API Key:
--   Users need to sign up for an OCR.space account and obtain an API key to access the OCR service. The API key is usually used for authentication when making requests to the OCR API.
+-  Users need to sign up for an OCR.space account and obtain an API key to access the OCR service. The API key is usually used for authentication when making requests to the OCR API.
 
 #### Usage and Pricing:
--   OCR.space typically offers different usage plans, including free plans with limited usage and premium plans with higher usage limits and additional features. Users may need to choose a plan based on their specific needs and volume of OCR requests.
+-   Google Cloud Platform imposes usage limits on the number of OCR requests per month. The exact limits depend on the pricing plan chosen by the user.
 
 #### Documentation and Support:
--   OCR.space typically provides documentation and guides for developers to understand how to use the API effectively. This includes information on making API requests, handling responses, and integrating OCR functionality into applications. Additionally, there may be support options for users who encounter issues or have questions.
+-   The official documentation for Google Cloud Vision API, including Handwriting Detection OCR, is available on the Google Cloud website. It provides comprehensive guides, tutorials, reference documentation, and examples to help users understand and utilize the OCR functionality effectively.
 
 # API endpoints 
 -   Documentarea tuturor endpoint-urilor API pentru extragerea textului.
@@ -68,32 +64,10 @@ the OCR community and has a reputation for being robust and reliable.
 
 - Request
 
-![api-request](doc/media/request-api.jpeg)
 
 - Response
 
-``` json
-{
-   "ParsedResults": [
-       {
-           "TextOverlay": {
-               "Lines": [],
-               "HasOverlay": false,
-               "Message": "Text overlay is not provided as it is not requested"
-           },
-           "TextOrientation": "0",
-           "FileParseExitCode": 1,
-           "ParsedText": "gecqus e\r\nbe doin\r\n",
-           "ErrorMessge": "a",
-           "ErrorDetails": ""
-       }
-   ],
-   "OCRExitCode": 1,
-   "IsErroredOnProcessing": false,
-   "ProcessingTimeInMilliseconds": "1500",
-   "SearchablePDFURL": "Searchable PDF not generated as it was not requested."
-}
-```
+
 
 # Costs
 -   **Amazon EC2 Instances:**
