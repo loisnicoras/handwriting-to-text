@@ -24,6 +24,7 @@ experts.
   - [Documentation and Support](#documentation-and-support)
 - [API endpoints](#api-endpoints)
 - [Examples of API Requests and Responses](#examples-of-api-requests-and-responses)
+- [API key for Google Cloud Platform (GCP)](#api-key-for-google-cloud-platform-gcp)
 - [Costs](#costs)
 
 # Application Architecture
