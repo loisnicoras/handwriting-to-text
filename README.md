@@ -24,6 +24,8 @@ experts.
   - [Documentation and Support](#documentation-and-support)
 - [API endpoints](#api-endpoints)
 - [Examples of API Requests and Responses](#examples-of-api-requests-and-responses)
+  - [Request](#request)
+  - [Response Body](#response-body)
 - [API key for Google Cloud Platform (GCP)](#api-key-for-google-cloud-platform-gcp)
 - [Costs](#costs)
 
@@ -33,37 +35,47 @@ experts.
 # Text Extraction API
 - Google Cloud Handwriting Detection with Optical Character Recognition (OCR) is a service provided by Google Cloud Platform (GCP) that allows users to extract text from handwritten documents, such as scanned images or photos. Here's an overview of how it works:
 
-#### OCR Functionality:
+### OCR Functionality:
 -   The OCR functionality is designed to deliver high accuracy in text extraction, even from challenging handwritten documents. It employs state-of-the-art machine learning algorithms and large-scale training datasets to achieve robust performance. 
 
-#### API Access:
+### API Access:
 -   Users can access the Handwriting Detection OCR service programmatically through REST API endpoints provided by Google Cloud Platform. This allows for seamless integration into applications and workflows.
 
-#### Supported Image Formats:
+### Supported Image Formats:
 -   Google Cloud Handwriting Detection OCR supports various image formats, including JPEG, PNG, and PDF. Users can upload scanned images or photos containing handwritten text for processing.
 
-#### Multi-Language Support:
+### Multi-Language Support:
 -   The OCR functionality supports multiple languages and scripts, allowing it to recognize handwritten text in various languages worldwide. This includes languages with complex scripts like Chinese, Japanese, and Arabic.
 
-#### Output Formats: 
+### Output Formats: 
 - The extracted text is returned in structured formats such as plain text strings or JSON responses. This facilitates easy integration with downstream applications and systems for further processing and analysis.
 
-#### Configuration and API Key:
+### Configuration and API Key:
 -  Users need to sign up for an OCR.space account and obtain an API key to access the OCR service. The API key is usually used for authentication when making requests to the OCR API.
 
-#### Usage and Pricing:
+### Usage and Pricing:
 -   Google Cloud Platform imposes usage limits on the number of OCR requests per month. The exact limits depend on the pricing plan chosen by the user.
 
-#### Documentation and Support:
+### Documentation and Support:
 -   The official documentation for Google Cloud Vision API, including Handwriting Detection OCR, is available on the Google Cloud website. It provides comprehensive guides, tutorials, reference documentation, and examples to help users understand and utilize the OCR functionality effectively.
 
-# API endpoints 
--   Documentarea tuturor endpoint-urilor API pentru extragerea textului.
--   Parametri de intrare și formatul așteptat pentru cererile API.
+# API key for Google Cloud Platform (GCP)
+1. Go to the Google Cloud Console: Visit the Google Cloud Console website at https://console.cloud.google.com/.
+
+2. Create a new project (if necessary): If you don't already have a project, create one by clicking on the project drop-down menu at the top of the page and selecting "New Project". Follow the prompts to create a new project.
+
+3. Select your project: After creating or selecting your project, make sure it's selected in the project drop-down menu at the top of the page.
+
+4. Navigate to the API & Services Credentials page: Click on the hamburger menu (☰) in the upper left corner, then navigate to "APIs & Services" > "Credentials".
+
+5. Create credentials: On the "Credentials" page, click on the "Create credentials" dropdown and select "API key".
+
+6. Copy your API key: Once the API key is created, it will be displayed on the screen. Copy the API key and use it in your application or script.
 
 # Examples of API Requests and Responses
 
-- Request
+#### Request
+
 ```bash
 # Set your API key
 API_KEY="YOUR_API_KEY"
@@ -97,7 +109,9 @@ EOF
 curl -s -X POST -H "Content-Type: application/json" --data-binary "${JSON_PAYLOAD}" "${API_ENDPOINT}" 
 ```
 
-- Response
+#### Response Body
+<details><summary markdown="span">Show body response</summary>
+
 ```json
 {
   "responses": [
@@ -385,18 +399,8 @@ curl -s -X POST -H "Content-Type: application/json" --data-binary "${JSON_PAYLOA
 }
 ```
 
-# API key for Google Cloud Platform (GCP)
-1. Go to the Google Cloud Console: Visit the Google Cloud Console website at https://console.cloud.google.com/.
-
-2. Create a new project (if necessary): If you don't already have a project, create one by clicking on the project drop-down menu at the top of the page and selecting "New Project". Follow the prompts to create a new project.
-
-3. Select your project: After creating or selecting your project, make sure it's selected in the project drop-down menu at the top of the page.
-
-4. Navigate to the API & Services Credentials page: Click on the hamburger menu (☰) in the upper left corner, then navigate to "APIs & Services" > "Credentials".
-
-5. Create credentials: On the "Credentials" page, click on the "Create credentials" dropdown and select "API key".
-
-6. Copy your API key: Once the API key is created, it will be displayed on the screen. Copy the API key and use it in your application or script.
+</details>
+<br/>
 
 # Costs
 -   **Amazon EC2 Instances:**
