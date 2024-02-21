@@ -44,7 +44,11 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 			return
 		}
 
-		response := extractTextFromImage(filePath, *apiKey)
+		response, err := extractTextFromImage(filePath, *apiKey)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		fmt.Fprintf(w, "Image %s uploaded successfully!\n", handler.Filename)
 		fmt.Fprintf(w, "Extracted Text:\n%s", response)
 	}
@@ -61,13 +65,12 @@ func saveFile(source io.Reader, destination string) error {
 	return err
 }
 
-func extractTextFromImage(filePath string, apiKey string) string {
+func extractTextFromImage(filePath string, apiKey string) (string, error) {
 
 	// Read and Base64 encode the image file
 	imageData, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		fmt.Println("Error reading image file:", err)
-		// return
+		return "", fmt.Errorf("Error reading image file: %w", err)
 	}
 	encodedImage := base64.StdEncoding.EncodeToString(imageData)
 
@@ -90,42 +93,36 @@ func extractTextFromImage(filePath string, apiKey string) string {
 	// Convert request payload to JSON
 	requestJSON, err := json.Marshal(requestData)
 	if err != nil {
-		fmt.Println("Error encoding JSON:", err)
-		// return
+		return "", fmt.Errorf("Error encoding JSON: %w", err)
 	}
 
 	// Send the HTTP POST request
 	apiEndpoint := fmt.Sprintf("https://vision.googleapis.com/v1/images:annotate?key=%s", apiKey)
 	response, err := http.Post(apiEndpoint, "application/json", bytes.NewBuffer(requestJSON))
 	if err != nil {
-		fmt.Println("Error sending request:", err)
-		// return
+		return "", fmt.Errorf("Error sending request: %w", err)
 	}
 	defer response.Body.Close()
 
 	// Read and parse the response
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		// return
+		return "", fmt.Errorf("Error reading response body: %w", err)
 	}
 
 	// Check if the request was successful
 	if response.StatusCode != http.StatusOK {
-		fmt.Println("Error:", string(responseBody))
-		// return
+		return "", fmt.Errorf("Error:", string(responseBody))
 	}
 
 	// Extract text from the response
 	var responseData map[string]interface{}
 	if err := json.Unmarshal(responseBody, &responseData); err != nil {
-		fmt.Println("Error decoding response JSON:", err)
-		// return
+		return "", fmt.Errorf("Error decoding response JSON:", err)
 	}
 
 	// Print the extracted text
 	extractedText := responseData["responses"].([]interface{})[0].(map[string]interface{})["fullTextAnnotation"].(map[string]interface{})["text"].(string)
 
-	return extractedText
+	return extractedText, nil
 }
-
