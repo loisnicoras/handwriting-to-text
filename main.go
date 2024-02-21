@@ -10,8 +10,10 @@ import (
 )
 
 func main() {
-	apiKey := flag.String("apiKey", "", "Specify an api key")
+	apiKey := flag.String("apiKey", "", "Specify an API key")
+	addr := flag.String("addr", ":8080", "Specify the server address and port")
 	flag.Parse()
+
 	// Create a new Chi router
 	router := chi.NewRouter()
 
@@ -19,7 +21,7 @@ func main() {
 	router.Get("/", handler.HomeHandler)
 	router.Post("/upload", handler.UploadHandler(apiKey))
 
-	// Start the server on port 8080
-	fmt.Println("Server is running at http://localhost:8080")
-	http.ListenAndServe(":8080", router)
+	// Start the server
+	fmt.Printf("Server is running at http://localhost:%s\n", *addr)
+	http.ListenAndServe(":"+*addr, router)
 }
