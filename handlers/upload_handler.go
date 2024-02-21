@@ -12,23 +12,23 @@ import (
 	"path/filepath"
 )
 
-type Response struct {
-	Status  int         `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-}
+// type Response struct {
+// 	Status  int         `json:"status"`
+// 	Message string      `json:"message"`
+// 	Data    interface{} `json:"data"`
+// }
 
-func createResponse(status int, message string, data interface{}) []byte {
-	resp := Response{
-		Status:  status,
-		Message: message,
-		Data:    data,
-	}
+// func createResponse(status int, message string, data interface{}) []byte {
+// 	resp := Response{
+// 		Status:  status,
+// 		Message: message,
+// 		Data:    data,
+// 	}
 
-	jsonData, _ := json.Marshal(resp)
+// 	jsonData, _ := json.Marshal(resp)
 
-	return jsonData
-}
+// 	return jsonData
+// }
 
 func UploadHandler(apiKey *string) http.HandlerFunc {
 	// Return a function compatible with http.HandlerFunc
@@ -37,8 +37,8 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 		// Parse the multipart form with a 20MB file size limit
 		err := r.ParseMultipartForm(20 * 1024 * 1024)
 		if err != nil {
-			jsonData := createResponse(500, "couldn't parse image", err)
-			w.Write(jsonData)
+			fmt.Println("couldn't parse image: %w", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
@@ -73,8 +73,20 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		jsonData := createResponse(200, "", imageText)
-		w.Write(jsonData)
+		data := map[string]interface{}{
+			"text":    imageText,
+		}
+
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			fmt.Printf("could not marshal json: %s\n", err)
+			return
+		}
+	
+		_, err = w.Write(jsonData)
+		if err != nil {
+			fmt.Println("error create response %w", err)
+		}
 	}
 }
 
