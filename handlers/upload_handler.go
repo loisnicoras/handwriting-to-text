@@ -19,7 +19,8 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 		// Parse the multipart form with a 20MB file size limit
 		err := r.ParseMultipartForm(20 * 1024 * 1024)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			fmt.Println("couldn't parse image: %w", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
@@ -40,15 +41,18 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 		// Create a file path for the uploaded file
 		filePath := filepath.Join(uploadDir, handler.Filename)
 		if err := saveFile(file, filePath); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			fmt.Println("couldn't save file: %w", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return 
 		}
 
 		response, err := extractTextFromImage(filePath, *apiKey)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			fmt.Println("couldn't exctract text from image: %w", err)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		
 		fmt.Fprintf(w, "Image %s uploaded successfully!\n", handler.Filename)
 		fmt.Fprintf(w, "Extracted Text:\n%s", response)
 	}
@@ -57,20 +61,21 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 func saveFile(source io.Reader, destination string) error {
 	outputFile, err := os.Create(destination)
 	if err != nil {
-		return err
+		return fmt.Errorf("couldn't create destination file: %w", err)
 	}
 	defer outputFile.Close()
 
-	_, err = io.Copy(outputFile, source)
-	return err
+	if _, err := io.Copy(outputFile, source); err != nil {
+		return fmt.Errorf("couldn't copy source file to destination file: %w", err)
+	}
+	return nil
 }
 
 func extractTextFromImage(filePath string, apiKey string) (string, error) {
-
 	// Read and Base64 encode the image file
 	imageData, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return "", fmt.Errorf("Error reading image file: %w", err)
+		return "", fmt.Errorf("error reading image file: %w", err)
 	}
 	encodedImage := base64.StdEncoding.EncodeToString(imageData)
 
@@ -93,36 +98,32 @@ func extractTextFromImage(filePath string, apiKey string) (string, error) {
 	// Convert request payload to JSON
 	requestJSON, err := json.Marshal(requestData)
 	if err != nil {
-		return "", fmt.Errorf("Error encoding JSON: %w", err)
+		return "", fmt.Errorf("error encoding JSON: %w", err)
 	}
 
 	// Send the HTTP POST request
 	apiEndpoint := fmt.Sprintf("https://vision.googleapis.com/v1/images:annotate?key=%s", apiKey)
 	response, err := http.Post(apiEndpoint, "application/json", bytes.NewBuffer(requestJSON))
 	if err != nil {
-		return "", fmt.Errorf("Error sending request: %w", err)
+		return "", fmt.Errorf("error sending request to api: %w", err)
 	}
 	defer response.Body.Close()
 
 	// Read and parse the response
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", fmt.Errorf("Error reading response body: %w", err)
-	}
-
-	// Check if the request was successful
-	if response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("Error:", string(responseBody))
+		return "", fmt.Errorf("error reading api response body: %w", err)
 	}
 
 	// Extract text from the response
 	var responseData map[string]interface{}
 	if err := json.Unmarshal(responseBody, &responseData); err != nil {
-		return "", fmt.Errorf("Error decoding response JSON:", err)
+		return "", fmt.Errorf("error decoding response JSON: %w", err)
 	}
 
-	// Print the extracted text
+	// return the extracted text
 	extractedText := responseData["responses"].([]interface{})[0].(map[string]interface{})["fullTextAnnotation"].(map[string]interface{})["text"].(string)
 
 	return extractedText, nil
 }
+
