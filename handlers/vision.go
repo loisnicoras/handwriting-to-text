@@ -55,7 +55,7 @@ func extractTextFromImage(filePath, apiKey string) (string, error) {
 	// Read and parse the response
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read API response bod: %w", err)
+		return "", fmt.Errorf("failed to read API response body: %w", err)
 	}
 
 	// Extract text from the response

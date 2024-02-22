@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -18,25 +17,24 @@ const (
 	dbname   = "my_database"
 )
 
-func connectToDB() *sql.DB {
+func connectToDB() (*sql.DB, error) {
 	// Create a connection string
 	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, hostname, dbname)
 
 	// Open a database connection
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to open a database connection: %w", err)
 	}
-	// defer db.Close()
 
 	// Check if the connection is successful
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 	_, err = db.Exec("USE " + dbname)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to use this database: %w", err)
 	}
 
 	// Create table 'users' in the database
@@ -50,17 +48,21 @@ func connectToDB() *sql.DB {
         )
 	`)
 	if err != nil {
-        log.Fatal(err)
-    }
+		return nil, fmt.Errorf("failed to create users table: %w", err)
+	}
 
-	return db
+	return db, nil
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	db := connectToDB()
+	db, err := connectToDB()
+	if err != nil {
+		http.Error(w, "failed to connect to the db", http.StatusInternalServerError)
+		return
+	}
 
 	// Parse form data
-	err := r.ParseForm()
+	err = r.ParseForm()
 	if err != nil {
 		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
