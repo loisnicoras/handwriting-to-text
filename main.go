@@ -19,6 +19,7 @@ func main() {
 
 	// Define handlers for different routes
 	router.Get("/", handler.HomeHandler)
+	router.Post("/user", handler.CreateUser)
 	router.Post("/upload", handler.UploadHandler(apiKey))
 
 	// Start the server

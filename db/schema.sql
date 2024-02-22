@@ -1,4 +1,4 @@
-CREATE TABLE `user` (
+CREATE TABLE `users` (
   `id` integer PRIMARY KEY AUTO_INCREMENT,
   `first_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
@@ -22,6 +22,6 @@ CREATE TABLE `users_results` (
   `result` integer
 );
 
-ALTER TABLE `users_results` ADD FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
+ALTER TABLE `users_results` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `users_results` ADD FOREIGN KEY (`exercise_id`) REFERENCES `exercises` (`id`);
