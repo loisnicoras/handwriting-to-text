@@ -1,0 +1,86 @@
+openapi: 3.0.0
+info:
+  title: Exercise API
+  version: 1.0.0
+paths:
+  /exercises:
+    get:
+      tags:
+      - "exercises"
+      summary: Get all exercises
+      operationId: getExercises
+      responses:
+        '204':
+          description: Status No Content
+        '500':
+          description: Internal Server Error
+        '200':
+          description: Successful response with exercise data
+          content:
+            application/json:
+              example:
+                exercises:
+                  - id: 1
+                    name: "Lorem Ipsum"
+                  - id: 2
+                    name: "Lorem Ipsum"
+                  - id: 3
+                    name: "Lorem Ipsum"
+  '/exercises/{Id}':
+    get:
+      tags:
+      - "exercises"
+      summary: Get exercise
+      operationId: getExercise
+      parameters:
+        - name: Id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Status No Content
+        '500':
+          description: Internal Server Error
+        '200':
+          description: Successful response with exercise data
+          content:
+            application/json:
+              example:
+                id: 1
+                audio_path: "/path/audio.mp3"
+                exercise_name: "lrem ispum"
+    post:
+      tags:
+      - "exercises"
+      summary: Submit Exercise
+      operationId: submitExercise
+      parameters:
+        - name: Id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                exercise_id:
+                  type: integer
+                user_id:
+                  type: integer
+                gen_text:
+                  type: string
+      responses:
+        '200':
+          description: Score response
+          content:
+            application/json:
+              example:
+                score: 100
