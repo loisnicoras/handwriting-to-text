@@ -14,15 +14,18 @@ func main() {
 	addr := flag.String("addr", ":8080", "Specify the server address and port")
 	flag.Parse()
 
-	// Create a new Chi router
-	router := chi.NewRouter()
+	r := chi.NewRouter()
 
-	// Define handlers for different routes
-	router.Get("/", handler.HomeHandler)
-	router.Post("/signup", handler.CreateUser)
-	router.Post("/upload", handler.UploadHandler(apiKey))
+	r.Get("/", handler.HomeHandler)
+	r.Post("/signup", handler.CreateUser)
+	r.Post("/upload", handler.UploadHandler(apiKey))
 
-	// Start the server
+	r.Route("/exercises", func(r chi.Router) {
+		r.Get("/", handler.GetExercises)
+		r.Get("/{exerciseID}", handler.GetExercise)
+		r.Post("/{exerciseID}", handler.SubmitExercise)
+	})
+
 	fmt.Printf("Server is running at http://localhost:%s\n", *addr)
-	http.ListenAndServe(":"+*addr, router)
+	http.ListenAndServe(":"+*addr, r)
 }
