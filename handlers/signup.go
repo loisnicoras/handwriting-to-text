@@ -30,32 +30,50 @@ func connectToDB() (*sql.DB, error) {
 	// Check if the connection is successful
 	err = db.Ping()
 	if err != nil {
+		db.Close() // Close the connection before returning the error
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-	_, err = db.Exec("USE " + dbname)
-	if err != nil {
-		return nil, fmt.Errorf("failed to use this database: %w", err)
-	}
 
-	// Create table 'users' in the database
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            first_name VARCHAR(50) NOT NULL,
-			last_name VARCHAR(50) NOT NULL,
-            email VARCHAR(100) NOT NULL,
-            password VARCHAR(100) NOT NULL
-        )
-	`)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create users table: %w", err)
+	// Setup the database (create table if not exists)
+	if err := setupDatabase(db); err != nil {
+		db.Close() // Close the connection before returning the error
+		return nil, err
 	}
 
 	return db, nil
 }
 
+func setupDatabase(db *sql.DB) error {
+	// Check if the 'users' table exists
+	rows, err := db.Query("SHOW TABLES LIKE 'users'")
+	if err != nil {
+		return fmt.Errorf("error checking for 'users' table existence: %w", err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		// 'users' table does not exist, create it
+		_, err := db.Exec(`
+            CREATE TABLE users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                first_name VARCHAR(50) NOT NULL,
+                last_name VARCHAR(50) NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                password VARCHAR(100) NOT NULL
+            )
+        `)
+		if err != nil {
+			return fmt.Errorf("error creating 'users' table: %w", err)
+		}
+	}
+
+	return nil
+}
+
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	db, err := connectToDB()
+	setupDatabase(db)
+
 	if err != nil {
 		http.Error(w, "failed to connect to the db", http.StatusInternalServerError)
 		return
