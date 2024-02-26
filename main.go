@@ -11,7 +11,7 @@ import (
 
 func main() {
 	apiKey := flag.String("apiKey", "", "Specify an API key")
-	addr := flag.String("addr", ":8080", "Specify the server address and port")
+	addr := flag.String("addr", "8080", "Specify the server address and port")
 	flag.Parse()
 
 	r := chi.NewRouter()
