@@ -3,6 +3,40 @@ info:
   title: Exercise API
   version: 1.0.0
 paths:
+  /extract-text:
+    post:
+      tags:
+      - "ocr"
+      summary: Uploads a file and returns the text.
+      operationId: uploadAndExtractText
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                example:
+                  text: >
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                    eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                    enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                    nisi ut aliquip ex ea commodo consequat.
+        '415':
+          description: Unsupported Media Type
   /exercises:
     get:
       tags:

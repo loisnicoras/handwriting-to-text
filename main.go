@@ -18,7 +18,7 @@ func main() {
 
 	r.Get("/", handler.HomeHandler)
 	r.Post("/signup", handler.CreateUser)
-	r.Post("/upload", handler.UploadHandler(apiKey))
+	r.Post("/extract-text", handler.UploadHandler(apiKey))
 
 	r.Route("/exercises", func(r chi.Router) {
 		r.Get("/", handler.GetExercises)

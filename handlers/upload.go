@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -35,6 +36,11 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 			return
 		}
 		defer file.Close()
+
+		if !isImage(file) {
+			http.Error(w, "", http.StatusUnsupportedMediaType)
+			return
+		}
 
 		// Create or use the "uploads" directory to store the uploaded files
 		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
@@ -76,6 +82,32 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 	}
 }
 
+func isImage(file multipart.File) bool {
+	// Read the first 512 bytes to determine the file type
+	buffer := make([]byte, 512)
+	_, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return false
+	}
+
+	// Reset the file pointer to the beginning
+	_, err = file.Seek(0, io.SeekStart)
+	if err != nil {
+		return false
+	}
+
+	// Check for image file types
+	fileType := http.DetectContentType(buffer)
+
+	// Check supported image formats
+	switch fileType {
+	case "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp", "image/tiff", "image/x-icon":
+		return true
+	default:
+		return false
+	}
+}
+
 func saveFile(source io.Reader, destination string) error {
 	outputFile, err := os.Create(destination)
 	if err != nil {
@@ -88,4 +120,3 @@ func saveFile(source io.Reader, destination string) error {
 	}
 	return nil
 }
-
