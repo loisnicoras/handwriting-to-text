@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -9,9 +10,9 @@ import (
 )
 
 type Exercise struct {
-	ID            int    `json:"id"`
-	Name          string `json:"name"`
-	Audio_path    string `json:"audio_path"`
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Audio_path string `json:"audio_path"`
 }
 
 func GetExercise(w http.ResponseWriter, r *http.Request) {
@@ -25,8 +26,9 @@ func GetExercise(w http.ResponseWriter, r *http.Request) {
 
 	var exercise Exercise
 
-	query := "SELECT * FROM your_table WHERE your_id = ?"
+	query := "SELECT id, exercise_name, audio_path FROM exercises WHERE id = ?"
 	row := db.QueryRow(query, exerciseID)
+
 
 	err = row.Scan(&exercise.ID, &exercise.Name, &exercise.Audio_path)
 	if err != nil {
@@ -39,7 +41,7 @@ func GetExercise(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to marshal the json", http.StatusInternalServerError)
 		return
 	}
-
+	fmt.Print(exerciseJSON)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(exerciseJSON)
@@ -72,12 +74,6 @@ func GetExercises(w http.ResponseWriter, r *http.Request) {
 		}
 		exercises = append(exercises, exercise)
 	}
-
-	// Check for errors during row iteration
-	// if err = rows.Err(); err != nil {
-	// 	http.Error(w, "failed to connect to the db", http.StatusInternalServerError)
-	// 	return
-	// }
 
 	// Marshal exercises slice to JSON
 	exercisesJSON, err := json.Marshal(exercises)
