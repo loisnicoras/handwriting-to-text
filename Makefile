@@ -1,9 +1,12 @@
+ENV := $(PWD)/.env
+include $(ENV)
+
 mysql:
 	sudo docker run -d --name mysql-container \
-	-e MYSQL_ROOT_PASSWORD=emanuel \
-	-e MYSQL_DATABASE=my_database \
-	-e MYSQL_USER=lois \
-	-e MYSQL_PASSWORD=emanuel \
+	-e MYSQL_ROOT_PASSWORD=$(MYSQL_ROOT_PASSWORD) \
+	-e MYSQL_DATABASE=$(MYSQL_DATABASE) \
+	-e MYSQL_USER=$(MYSQL_USER) \
+	-e MYSQL_PASSWORD=$(MYSQL_PASSWORD) \
 	-p 3306:3306 \
 	mysql:latest
 	
@@ -15,9 +18,9 @@ dropdb:
 
 run:
 	go run main.go --apiKey=AIzaSyBWomSOPNh-6Xxzg3aUTX7nyr0e5v91TsQ --addr=8081 \
-	--dbUser=lois \
-	--dbPass=emanuel \
-	--dbHost=localhost \
-	--dbName=my_database
+	--dbUser=$(MYSQL_USER) \
+	--dbPass=$(MYSQL_PASSWORD) \
+	--dbHost=$(MYSQL_HOST) \
+	--dbName=$(MYSQL_DATABASE)
 
 .PHONY: image mysql dump dropdb run
