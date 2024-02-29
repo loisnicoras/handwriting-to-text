@@ -15,6 +15,12 @@ type Exercise struct {
 	Audio_path string `json:"audio_path"`
 }
 
+type SubmitExerciseRequest struct {
+	ExerciseID int    `json:"exercise_id"`
+	UserID     int    `json:"user_id"`
+	GenText    string `json:"generate_text"`
+}
+
 func GetExercise(db *sql.DB) http.HandlerFunc {
 	// db, err := connectToDB()
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +86,42 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 
 func SubmitExercise(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		exerciseID := chi.URLParam(r, "exerciseID")
+		query := "SELECT id FROM exercises WHERE id = ?"
+		row := db.QueryRow(query, exerciseID)
+
+		var exercise Exercise
+		err := row.Scan(&exercise.ID)
+		if err != nil {
+			http.Error(w, "the row doesn't exist in db", http.StatusInternalServerError)
+			return
+		}
+
+		var reqBody SubmitExerciseRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			http.Error(w, "Error decode json", http.StatusBadRequest)
+			return
+		}
+
+		// Insert data into users_results table
+		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, photo_text, generate_text) VALUES (?, ?, ?, ?)",
+			reqBody.UserID, exerciseID, "photo_text_placeholder", reqBody.GenText)
+		if err != nil {
+			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)
+			return
+		}
+		response := genResult()
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
+
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+			return
+		}
 	}
+}
+
+func genResult() int {
+	// TODO
+	return 100
 }
