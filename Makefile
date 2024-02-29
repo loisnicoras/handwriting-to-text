@@ -7,15 +7,16 @@ mysql:
 	-e MYSQL_DATABASE=$(MYSQL_DATABASE) \
 	-e MYSQL_USER=$(MYSQL_USER) \
 	-e MYSQL_PASSWORD=$(MYSQL_PASSWORD) \
-	-p 3306:3306 \
+	-p 3306:$(MYSQL_PORT) \
 	-v $(PWD)/db/schema.sql:/docker-entrypoint-initdb.d/dump.sql \
 	mysql:latest
 
 dump:
-	mysql -u lois -p < db/dump.sql
+	docker cp ./db/dump.sql mysql-container:/dump.sql
+	docker exec -i mysql-container mysql -u lois --password=emanuel my_database < ./db/dump.sql
 
 dropdb:
-	mysqladmin -u lois -p drop my_database
+	docker exec -i mysql-container mysql -ulois -p -e "DROP DATABASE my_database;"
 
 removemysql:
 	sudo docker stop mysql-container
@@ -26,6 +27,7 @@ run:
 	--dbUser=$(MYSQL_USER) \
 	--dbPass=$(MYSQL_PASSWORD) \
 	--dbHost=$(MYSQL_HOST) \
+	--dbPort=$(MYSQL_PORT)
 	--dbName=$(MYSQL_DATABASE)
 
 .PHONY: image mysql dump dropdb run

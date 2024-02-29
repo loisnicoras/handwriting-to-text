@@ -10,9 +10,9 @@ import (
 	handler "github.com/loisnicoras/handwriting-to-text/handlers"
 )
 
-func connectToDB(username, password, hostname, dbname string) (*sql.DB, error) {
+func connectToDB(username, password, hostname, port, dbname string) (*sql.DB, error) {
 	// Create a connection string
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, hostname, dbname)
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, hostname, port, dbname)
 
 	// Open a database connection
 	db, err := sql.Open("mysql", dataSourceName)
@@ -36,10 +36,12 @@ func main() {
 	dbUser := flag.String("dbUser", "lois", "Specify the database user")
 	dbPass := flag.String("dbPass", "emanuel", "Specify the database password")
 	dbHost := flag.String("dbHost", "localhost", "Specify the database hostname")
+	dbPort := flag.String("dbPort", "3306", "Specify the database port")
 	dbName := flag.String("dbName", "my_database", "Specify the database name")
+	
 	flag.Parse()
 
-	db, err := connectToDB(*dbUser, *dbPass, *dbHost, *dbName)
+	db, err := connectToDB(*dbUser, *dbPass, *dbHost, *dbPort, *dbName)
 	if err != nil {
 		fmt.Printf("failed to connect to the db %s", err)
 		return
