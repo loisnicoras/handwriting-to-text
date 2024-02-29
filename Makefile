@@ -8,14 +8,19 @@ mysql:
 	-e MYSQL_USER=$(MYSQL_USER) \
 	-e MYSQL_PASSWORD=$(MYSQL_PASSWORD) \
 	-p 3306:3306 \
+	-v $(PWD)/db/schema.sql:/docker-entrypoint-initdb.d/dump.sql \
 	mysql:latest
-	
+
 dump:
 	mysql -u lois -p < db/dump.sql
 
 dropdb:
 	mysqladmin -u lois -p drop my_database
 
+removemysql:
+	sudo docker stop mysql-container
+	sudo docker rm mysql-container
+	
 run:
 	go run main.go --apiKey=AIzaSyBWomSOPNh-6Xxzg3aUTX7nyr0e5v91TsQ --addr=8081 \
 	--dbUser=$(MYSQL_USER) \
