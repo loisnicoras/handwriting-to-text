@@ -97,6 +97,7 @@ func SubmitExercise(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		// Parse request body
 		var reqBody SubmitExerciseRequest
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 			http.Error(w, "Error decode json", http.StatusBadRequest)
@@ -110,11 +111,21 @@ func SubmitExercise(db *sql.DB) http.HandlerFunc {
 			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)
 			return
 		}
-		response := genResult()
+
+		// Update result in users_results table
+		result := genResult()
+		_, err = db.Exec("UPDATE users_results SET result = ? WHERE user_id = ? AND exercise_id = ?",
+			result, reqBody.UserID, exerciseID)
+		if err != nil {
+			http.Error(w, "Failed to update result in users_results table", http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
 
-		if err := json.NewEncoder(w).Encode(response); err != nil {
+		// Write response body
+		if err := json.NewEncoder(w).Encode(result); err != nil {
 			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
 			return
 		}
