@@ -1,0 +1,23 @@
+name: go
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@main
+      - name: (for local development proposess) Install sudo package
+        run: |
+          apt-get update -qq && apt-get install sudo -qq
+          sudo apt-get install -y build-essential > /dev/null
+      - name: Install deps
+        run: |
+          make install
+      - name: Check linter
+        run: make lint ./handwriting-to-text/handlers/*
+      - name: clean
+        run: make clean
