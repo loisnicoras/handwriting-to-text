@@ -12,7 +12,7 @@ import (
 type Exercise struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`
-	Audio_path string `json:"audio_path"`
+	AudioPath string `json:"audio_path"`
 }
 
 type SubmitExerciseRequest struct {
@@ -30,7 +30,7 @@ func GetExercise(db *sql.DB) http.HandlerFunc {
 		query := "SELECT id, exercise_name, audio_path FROM exercises WHERE id = ?"
 		row := db.QueryRow(query, exerciseID)
 
-		err := row.Scan(&exercise.ID, &exercise.Name, &exercise.Audio_path)
+		err := row.Scan(&exercise.ID, &exercise.Name, &exercise.AudioPath)
 		if err != nil {
 			http.Error(w, "the row doesn't exist in db", http.StatusInternalServerError)
 			return
@@ -44,7 +44,11 @@ func GetExercise(db *sql.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write(exerciseJSON)
+
+		_, err = w.Write(exerciseJSON)
+		if err != nil {
+			http.Error(w, "Error writing response:", http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -80,7 +84,11 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write(exercisesJSON)
+
+		_, err = w.Write(exercisesJSON)
+		if err != nil {
+			http.Error(w, "Error writing response:", http.StatusInternalServerError)
+		}
 	}
 }
 

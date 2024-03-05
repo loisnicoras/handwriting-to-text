@@ -44,7 +44,11 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 
 		// Create or use the "uploads" directory to store the uploaded files
 		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-			os.Mkdir(uploadDir, os.ModePerm)
+			err := os.Mkdir(uploadDir, os.ModePerm)
+			if err != nil {
+				http.Error(w, "Error creating 'uploads' directory:", http.StatusInternalServerError)
+				return
+			}
 		}
 
 		// Create a file path for the uploaded file
