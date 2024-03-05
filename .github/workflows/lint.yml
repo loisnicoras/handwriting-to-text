@@ -18,6 +18,6 @@ jobs:
         run: |
           make install
       - name: Check linter
-        run: make lint -C handlers/
+        run: make lint -C .
       - name: clean
-        run: make clean
+        run: make clean -C .
