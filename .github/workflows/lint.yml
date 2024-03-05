@@ -18,6 +18,6 @@ jobs:
         run: |
           make install
       - name: Check linter
-        run: make lint -C ./handwriting-to-text/handlers/*
+        run: make lint -C ./handlers/*
       - name: clean
         run: make clean
