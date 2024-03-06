@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -10,8 +11,8 @@ import (
 )
 
 type Exercise struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
 	AudioPath string `json:"audio_path"`
 }
 
@@ -112,20 +113,16 @@ func SubmitExercise(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		// TODO: Get score
+		mistakes, words := countTextMistakes(reqBody.GenText)
+		score := calculateScore(mistakes, words)
+		res := formatFloat(score)
+
 		// Insert data into users_results table
-		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, photo_text, generate_text) VALUES (?, ?, ?, ?)",
-			reqBody.UserID, exerciseID, "photo_text_placeholder", reqBody.GenText)
+		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, generate_text, result) VALUES (?, ?, ?, ?, ?)",
+			reqBody.UserID, exerciseID, reqBody.GenText, res)
 		if err != nil {
 			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)
-			return
-		}
-
-		// Update result in users_results table
-		result := genResult()
-		_, err = db.Exec("UPDATE users_results SET result = ? WHERE user_id = ? AND exercise_id = ?",
-			result, reqBody.UserID, exerciseID)
-		if err != nil {
-			http.Error(w, "Failed to update result in users_results table", http.StatusInternalServerError)
 			return
 		}
 
@@ -133,14 +130,27 @@ func SubmitExercise(db *sql.DB) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 
 		// Write response body
-		if err := json.NewEncoder(w).Encode(result); err != nil {
+		if err := json.NewEncoder(w).Encode(res); err != nil {
 			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-func genResult() int {
-	// TODO
-	return 100
+func countTextMistakes(genText string) (mistakes, words int) {
+	return 1, 2
 }
+
+func formatFloat(value float32) string {
+	return fmt.Sprintf("%.2f", value)
+}
+
+func calculateScore(mistakes, words int) float32 {
+	if words == 0 {
+		// Handle division by zero
+		return 0.0
+	}
+
+	return float32(mistakes) / float32(words) * 100.0
+}
+
