@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -14,12 +16,22 @@ type Exercise struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
 	AudioPath string `json:"audio_path"`
+	Text      string `json:"text"`
 }
 
 type SubmitExerciseRequest struct {
 	ExerciseID int    `json:"exercise_id"`
 	UserID     int    `json:"user_id"`
 	GenText    string `json:"generate_text"`
+}
+
+type GeminiRequest struct {
+	CorrectText   string `json:"correct_text"`
+	IncorrectText string `json:"incorrect_text"`
+}
+
+type GeminiResponse struct {
+	Score float64 `json:"score"`
 }
 
 func GetExercise(db *sql.DB) http.HandlerFunc {
@@ -96,11 +108,11 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 func SubmitExercise(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		exerciseID := chi.URLParam(r, "exerciseID")
-		query := "SELECT id FROM exercises WHERE id = ?"
+		query := "SELECT id, text FROM exercises WHERE id = ?"
 		row := db.QueryRow(query, exerciseID)
 
 		var exercise Exercise
-		err := row.Scan(&exercise.ID)
+		err := row.Scan(&exercise.ID, &exercise.Text)
 		if err != nil {
 			http.Error(w, "the row doesn't exist in db", http.StatusInternalServerError)
 			return
@@ -113,9 +125,7 @@ func SubmitExercise(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// TODO: Get score
-		mistakes, words := countTextMistakes(reqBody.GenText)
-		score := calculateScore(mistakes, words)
+		score := calculateScore(exercise.Text, reqBody.GenText)
 		res := formatFloat(score)
 
 		// Insert data into users_results table
@@ -137,20 +147,46 @@ func SubmitExercise(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func countTextMistakes(genText string) (mistakes, words int) {
-	return 1, 2
-}
-
 func formatFloat(value float32) string {
 	return fmt.Sprintf("%.2f", value)
 }
 
-func calculateScore(mistakes, words int) float32 {
-	if words == 0 {
-		// Handle division by zero
-		return 0.0
+func calculateScore(correctText, genText string) float32 {
+	requestPayload := GeminiRequest{
+		CorrectText:   correctText,
+		IncorrectText: genText,
 	}
 
-	return float32(mistakes) / float32(words) * 100.0
-}
+	requestBody, err := json.Marshal(requestPayload)
+	if err != nil {
+		fmt.Println("Error encoding request payload:", err)
+		return 0
+	}
 
+	// Send POST request to Gemini API
+	apiUrl := "https://api.gemini.com/compare_texts" //change the api URL
+	response, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		fmt.Println("Error sending request to Gemini API:", err)
+		return 0
+	}
+	defer response.Body.Close()
+
+	fmt.Print(response)
+	// Read response body
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return 0
+	}
+
+	// Parse JSON response
+	var geminiResponse GeminiResponse
+	if err := json.Unmarshal(responseBody, &geminiResponse); err != nil {
+		fmt.Println("Error decoding JSON response:", err)
+		return 0
+	}
+	fmt.Print(geminiResponse)
+
+	return float32(geminiResponse.Score)
+}
