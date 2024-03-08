@@ -37,7 +37,7 @@ install:
 
 lint:
 	@./golangci-lint run -v ./handlers/
-	@./golangci-lint run -v .
+	@./golangci-lint run -v main.go
 
 clean:
 	@sudo rm ./golangci-lint 
