@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	"bytes"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 
+	"cloud.google.com/go/vertexai/genai"
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -32,6 +33,24 @@ type GeminiRequest struct {
 
 type GeminiResponse struct {
 	Score float64 `json:"score"`
+}
+
+type Candidate struct {
+	Index   int `json:"Index"`
+	Content struct {
+		Role  string   `json:"Role"`
+		Parts []string `json:"Parts"`
+	} `json:"Content"`
+	FinishReason     int            `json:"FinishReason"`
+	SafetyRatings    []SafetyRating `json:"SafetyRatings"`
+	FinishMessage    string         `json:"FinishMessage"`
+	CitationMetadata interface{}    `json:"CitationMetadata"`
+}
+
+type SafetyRating struct {
+	Category    int  `json:"Category"`
+	Probability int  `json:"Probability"`
+	Blocked     bool `json:"Blocked"`
 }
 
 func GetExercise(db *sql.DB) http.HandlerFunc {
@@ -105,7 +124,7 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func SubmitExercise(db *sql.DB) http.HandlerFunc {
+func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		exerciseID := chi.URLParam(r, "exerciseID")
 		query := "SELECT id, text FROM exercises WHERE id = ?"
@@ -125,12 +144,11 @@ func SubmitExercise(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		score := calculateScore(exercise.Text, reqBody.GenText)
-		res := formatFloat(score)
+		score := calculateScore(exercise.Text, reqBody.GenText, projectId, region)
 
 		// Insert data into users_results table
 		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, generate_text, result) VALUES (?, ?, ?, ?, ?)",
-			reqBody.UserID, exerciseID, reqBody.GenText, res)
+			reqBody.UserID, exerciseID, reqBody.GenText, score)
 		if err != nil {
 			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)
 			return
@@ -140,53 +158,50 @@ func SubmitExercise(db *sql.DB) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 
 		// Write response body
-		if err := json.NewEncoder(w).Encode(res); err != nil {
+		if err := json.NewEncoder(w).Encode(score); err != nil {
 			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-func formatFloat(value float32) string {
-	return fmt.Sprintf("%.2f", value)
-}
-
-func calculateScore(correctText, genText string) float32 {
-	requestPayload := GeminiRequest{
-		CorrectText:   correctText,
-		IncorrectText: genText,
-	}
-
-	requestBody, err := json.Marshal(requestPayload)
+func calculateScore(correctText, genText, projectId, region string) int {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, projectId, region)
 	if err != nil {
-		fmt.Println("Error encoding request payload:", err)
-		return 0
+		fmt.Errorf("Failed create new client: %w", err)
 	}
+	gemini := client.GenerativeModel("gemini-pro-vision")
 
-	// Send POST request to Gemini API
-	apiUrl := "https://api.gemini.com/compare_texts" //change the api URL
-	response, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(requestBody))
+	prompt := genai.Text("Can you give me a score (just the score no more words) that is between 0-100 from comparing the first text with the second. First is the correct text. The correct text is: " + correctText + " The incorrect text is " + genText)
+	resp, err := gemini.GenerateContent(ctx, prompt)
 	if err != nil {
-		fmt.Println("Error sending request to Gemini API:", err)
-		return 0
+		fmt.Errorf("Failed to generate content: %w", err)
 	}
-	defer response.Body.Close()
+	rb, _ := json.MarshalIndent(resp, "", "  ")
 
-	fmt.Print(response)
-	// Read response body
-	responseBody, err := ioutil.ReadAll(response.Body)
+	type Response struct {
+		Candidates []Candidate `json:"Candidates"`
+	}
+
+	// Unmarshal the JSON response string into the Response struct
+	var response Response
+	err = json.Unmarshal([]byte(rb), &response)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return 0
+		fmt.Errorf("Failed to unmarshal the json: %w", err)
 	}
 
-	// Parse JSON response
-	var geminiResponse GeminiResponse
-	if err := json.Unmarshal(responseBody, &geminiResponse); err != nil {
-		fmt.Println("Error decoding JSON response:", err)
-		return 0
-	}
-	fmt.Print(geminiResponse)
+	// Access the "Parts" data from the first candidate
+	parts := response.Candidates[0].Content.Parts
 
-	return float32(geminiResponse.Score)
+	// Convert the string value to float64
+	floatValue, err := strconv.ParseFloat(parts[0], 64)
+	if err != nil {
+		fmt.Errorf("Failed to parse float value: %w", err)
+	}
+
+	// Convert float64 to integer
+	intValue := int(floatValue)
+
+	return intValue
 }
