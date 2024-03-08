@@ -38,8 +38,8 @@ func main() {
 	dbHost := flag.String("dbHost", "localhost", "Specify the database hostname")
 	dbPort := flag.String("dbPort", "3306", "Specify the database port")
 	dbName := flag.String("dbName", "my_database", "Specify the database name")
-	var projectId = "moonlit-shadow-325207"
-	var region = "us-central1"
+	projectId := flag.String("projectId", "moonlit-shadow-325207", "Specify the google cloud project id")
+	region := flag.String("region", "us-central1", "Specify the vertex ai region")
 
 	flag.Parse()
 
@@ -58,7 +58,7 @@ func main() {
 	r.Route("/exercises", func(r chi.Router) {
 		r.Get("/", handler.GetExercises(db))
 		r.Get("/{exerciseID}", handler.GetExercise(db))
-		r.Post("/{exerciseID}", handler.SubmitExercise(db, projectId, region))
+		r.Post("/{exerciseID}", handler.SubmitExercise(db, *projectId, *region))
 	})
 
 	fmt.Printf("Server is running at http://localhost:%s\n", *addr)

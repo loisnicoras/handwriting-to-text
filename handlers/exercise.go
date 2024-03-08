@@ -26,15 +26,6 @@ type SubmitExerciseRequest struct {
 	GenText    string `json:"generate_text"`
 }
 
-type GeminiRequest struct {
-	CorrectText   string `json:"correct_text"`
-	IncorrectText string `json:"incorrect_text"`
-}
-
-type GeminiResponse struct {
-	Score float64 `json:"score"`
-}
-
 type Candidate struct {
 	Index   int `json:"Index"`
 	Content struct {
@@ -54,7 +45,6 @@ type SafetyRating struct {
 }
 
 func GetExercise(db *sql.DB) http.HandlerFunc {
-	// db, err := connectToDB()
 	return func(w http.ResponseWriter, r *http.Request) {
 		exerciseID := chi.URLParam(r, "exerciseID")
 		var exercise Exercise

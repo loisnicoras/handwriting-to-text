@@ -29,6 +29,8 @@ run:
 	--dbHost=$(MYSQL_HOST) \
 	--dbPort=$(MYSQL_PORT)
 	--dbName=$(MYSQL_DATABASE)
+	--projectId=$(PROJECTID)
+	--region=$(REGION)
 
 install:
 	@sudo curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b . v1.56.2
