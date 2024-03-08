@@ -42,4 +42,4 @@ lint:
 clean:
 	@sudo rm ./golangci-lint 
 
-.PHONY: image mysql dump dropdb run install clean
+.PHONY: image mysql dump dropdb run install lint clean
