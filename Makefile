@@ -23,7 +23,7 @@ removemysql:
 	@sudo docker rm mysql-container
 	
 run:
-	@go run main.go --apiKey=$(API_KEY) --addr=8081 \
+	@go run main.go --apiKey=$(API_KEY) --addr=$(SERVER_ADDR) \
 	--dbUser=$(MYSQL_USER) \
 	--dbPass=$(MYSQL_PASSWORD) \
 	--dbHost=$(MYSQL_HOST) \
