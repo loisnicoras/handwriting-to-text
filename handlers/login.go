@@ -100,7 +100,7 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
+func AuthMiddleware(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !isUserLoggedIn(r) {
 			// http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -109,7 +109,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-
 }
 
 func isUserLoggedIn(r *http.Request) bool {
