@@ -21,17 +21,17 @@ INSERT INTO exercises (exercise_name, audio_path, text) VALUES
 -- Create the users table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    first_name VARCHAR(255),
-    last_name VARCHAR(255),
-    email VARCHAR(255),
-    password VARCHAR(255)
+    sub VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255),
+    avatar_url VARCHAR(255)
 );
 
 -- Insert sample data into the users table
-INSERT INTO users (first_name, last_name, email, password) VALUES
-('John', 'Doe', 'john@example.com', 'password1'),
-('Jane', 'Smith', 'jane@example.com', 'password2'),
-('Alice', 'Johnson', 'alice@example.com', 'password3');
+-- INSERT INTO users (first_name, last_name, email, password) VALUES
+-- ('John', 'Doe', 'john@example.com', 'password1'),
+-- ('Jane', 'Smith', 'jane@example.com', 'password2'),
+-- ('Alice', 'Johnson', 'alice@example.com', 'password3');
 
 -- Create the users_results table
 CREATE TABLE IF NOT EXISTS users_results (
@@ -45,10 +45,10 @@ CREATE TABLE IF NOT EXISTS users_results (
 );
 
 -- Insert sample data into the users_results table
-INSERT INTO users_results (user_id, exercise_id, photo_text, generate_text, result) VALUES
-(1, 1, 'photo_text1', 'generate_text1', 80),
-(1, 2, 'photo_text2', 'generate_text2', 90),
-(2, 1, 'photo_text3', 'generate_text3', 75),
-(2, 2, 'photo_text4', 'generate_text4', 85),
-(3, 1, 'photo_text5', 'generate_text5', 95),
-(3, 2, 'photo_text6', 'generate_text6', 70);
+-- INSERT INTO users_results (user_id, exercise_id, photo_text, generate_text, result) VALUES
+-- (1, 1, 'photo_text1', 'generate_text1', 80),
+-- (1, 2, 'photo_text2', 'generate_text2', 90),
+-- (2, 1, 'photo_text3', 'generate_text3', 75),
+-- (2, 2, 'photo_text4', 'generate_text4', 85),
+-- (3, 1, 'photo_text5', 'generate_text5', 95),
+-- (3, 2, 'photo_text6', 'generate_text6', 70);

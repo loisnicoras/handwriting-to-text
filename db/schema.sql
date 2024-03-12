@@ -1,9 +1,9 @@
 CREATE TABLE `users` (
-  `id` integer PRIMARY KEY AUTO_INCREMENT,
-  `first_name` varchar(255) NOT NULL,
-  `last_name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sub VARCHAR(255) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255),
+  avatar_url VARCHAR(255)
 );
 
 CREATE TABLE `exercises` (

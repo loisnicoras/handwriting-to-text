@@ -52,11 +52,13 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Get("/", handler.HomeHandler)
-	r.Post("/signup", handler.CreateUser(db))
+	r.Get("/login", handler.handleGoogleLogin)
+	r.Get("/callback", handler.handleGoogleCallback(db))
 	r.Post("/extract-text", handler.UploadHandler(apiKey))
 
 	r.Route("/exercises", func(r chi.Router) {
 		r.Get("/", handler.GetExercises(db))
+		r.Use(handler.authMiddleware)
 		r.Get("/{exerciseID}", handler.GetExercise(db))
 		r.Post("/{exerciseID}", handler.SubmitExercise(db, *projectId, *region))
 	})
