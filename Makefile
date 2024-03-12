@@ -13,10 +13,10 @@ mysql:
 
 dump:
 	@docker cp ./db/dump.sql mysql-container:/dump.sql
-	@docker exec -i mysql-container mysql -u lois --password=emanuel my_database < ./db/dump.sql
+	@docker exec -i mysql-container mysql -u $(MYSQL_USER) --password=$(MYSQL_PASSWORD) $(MYSQL_DATABASE) < ./db/dump.sql
 
 dropdb:
-	@docker exec -i mysql-container mysql -ulois -p -e "DROP DATABASE my_database;"
+	@docker exec -i mysql-container mysql -u $(MYSQL_USER) -p -e "DROP DATABASE $(MYSQL_USER);"
 
 removemysql:
 	@sudo docker stop mysql-container
@@ -28,7 +28,7 @@ run:
 	--dbPass=$(MYSQL_PASSWORD) \
 	--dbHost=$(MYSQL_HOST) \
 	--dbPort=$(MYSQL_PORT)
-	--dbName=$(MYSQL_DATABASE)
+	--dbName=$(MYSQL_USER)
 	--projectId=$(PROJECTID)
 	--region=$(REGION)
 
