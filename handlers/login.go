@@ -37,12 +37,12 @@ func init() {
 	}
 }
 
-func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
+func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	url := googleOauthConfig.AuthCodeURL(oauthStateString)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
-func handleGoogleCallback(db *sql.DB) http.HandlerFunc {
+func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		state := r.FormValue("state")
 		if state != oauthStateString {
@@ -100,7 +100,7 @@ func handleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func authMiddleware(next http.Handler) http.Handler {
+func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !isUserLoggedIn(r) {
 			// http.Redirect(w, r, "/login", http.StatusSeeOther)

@@ -1,13 +1,18 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/gorilla/sessions"
 	handler "github.com/loisnicoras/handwriting-to-text/handlers"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 func connectToDB(username, password, hostname, port, dbname string) (*sql.DB, error) {
@@ -52,14 +57,14 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Get("/", handler.HomeHandler)
-	r.Get("/login", handler.handleGoogleLogin)
-	r.Get("/callback", handler.handleGoogleCallback(db))
+	r.Get("/login", handler.HandleGoogleLogin)
+	r.Get("/callback", handler.HandleGoogleCallback(db))
 	r.Post("/extract-text", handler.UploadHandler(apiKey))
 
 	r.Route("/exercises", func(r chi.Router) {
+		r.Use(handler.AuthMiddleware)
 		r.Get("/", handler.GetExercises(db))
-		r.Use(handler.authMiddleware)
-		r.Get("/{exerciseID}", handler.GetExercise(db))
+		r.Get("/{exerciseID}",  handler.GetExercise(db))
 		r.Post("/{exerciseID}", handler.SubmitExercise(db, *projectId, *region))
 	})
 
