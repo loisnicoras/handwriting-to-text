@@ -7,7 +7,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	h "github.com/loisnicoras/handwriting-to-text/handlers"
+	handler "github.com/loisnicoras/handwriting-to-text/handlers"
+	login "github.com/loisnicoras/handwriting-to-text/login"
+
 )
 
 func connectToDB(username, password, hostname, port, dbname string) (*sql.DB, error) {
@@ -51,16 +53,16 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Get("/", h.HomeHandler)
-	r.Get("/login", h.HandleGoogleLogin)
-	r.Get("/callback", h.HandleGoogleCallback(db))
-	r.Post("/extract-text", h.UploadHandler(apiKey))
+	r.Get("/", handler.HomeHandler)
+	r.Get("/login", login.HandleGoogleLogin)
+	r.Get("/callback", login.HandleGoogleCallback(db))
+	r.Post("/extract-text", handler.UploadHandler(apiKey))
 
 	r.Route("/exercises", func(r chi.Router) {
 		// r.Use(handler.AuthMiddleware)
-		r.Get("/", h.GetExercises(db))
-		r.Get("/{exerciseID}", h.AuthMiddleware(h.GetExercise(db)))
-		r.Post("/{exerciseID}", h.AuthMiddleware(h.SubmitExercise(db, *projectId, *region)))
+		r.Get("/", handler.GetExercises(db))
+		r.Get("/{exerciseID}", login.AuthMiddleware(handler.GetExercise(db)))
+		r.Post("/{exerciseID}", login.AuthMiddleware(handler.SubmitExercise(db, *projectId, *region)))
 	})
 
 	fmt.Printf("Server is running at http://localhost:%s\n", *addr)
