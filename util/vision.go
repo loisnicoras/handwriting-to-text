@@ -1,12 +1,15 @@
-package handlers
+package util
 
 import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"os"
 )
 
 const (
@@ -14,7 +17,7 @@ const (
 	featureType = "DOCUMENT_TEXT_DETECTION"
 )
 
-func extractTextFromImage(filePath, apiKey string) (string, error) {
+func ExtractTextFromImage(filePath, apiKey string) (string, error) {
 	// Read and Base64 encode the image file
 	imageData, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -75,7 +78,45 @@ func extractTextFromImage(filePath, apiKey string) (string, error) {
 			}
 		}
 	}
-	
+
 	return extractedText, nil
 }
 
+func IsImage(file multipart.File) bool {
+	// Read the first 512 bytes to determine the file type
+	buffer := make([]byte, 512)
+	_, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return false
+	}
+
+	// Reset the file pointer to the beginning
+	_, err = file.Seek(0, io.SeekStart)
+	if err != nil {
+		return false
+	}
+
+	// Check for image file types
+	fileType := http.DetectContentType(buffer)
+
+	// Check supported image formats
+	switch fileType {
+	case "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp", "image/tiff", "image/x-icon":
+		return true
+	default:
+		return false
+	}
+}
+
+func SaveFile(source io.Reader, destination string) error {
+	outputFile, err := os.Create(destination)
+	if err != nil {
+		return fmt.Errorf("couldn't create destination file: %w", err)
+	}
+	defer outputFile.Close()
+
+	if _, err := io.Copy(outputFile, source); err != nil {
+		return fmt.Errorf("couldn't copy source file to destination file: %w", err)
+	}
+	return nil
+}

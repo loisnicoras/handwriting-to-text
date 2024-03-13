@@ -12,15 +12,6 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-// User model
-type User struct {
-	ID        int
-	Sub       string
-	Email     string
-	Name      string
-	AvatarURL string
-}
-
 var (
 	googleOauthConfig *oauth2.Config
 	oauthStateString  = "random"

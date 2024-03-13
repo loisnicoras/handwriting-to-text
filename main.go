@@ -7,8 +7,10 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	handler "github.com/loisnicoras/handwriting-to-text/handlers"
-	login "github.com/loisnicoras/handwriting-to-text/login"
+	exercise "github.com/loisnicoras/handwriting-to-text/handlers/exercise"
+	upload "github.com/loisnicoras/handwriting-to-text/handlers/upload"
+	login "github.com/loisnicoras/handwriting-to-text/handlers/login"
+	home "github.com/loisnicoras/handwriting-to-text/handlers/home"
 
 )
 
@@ -53,16 +55,16 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Get("/", handler.HomeHandler)
+	r.Get("/", home.HomeHandler)
 	r.Get("/login", login.HandleGoogleLogin)
 	r.Get("/callback", login.HandleGoogleCallback(db))
-	r.Post("/extract-text", handler.UploadHandler(apiKey))
+	r.Post("/extract-text", upload.UploadHandler(apiKey))
 
 	r.Route("/exercises", func(r chi.Router) {
 		// r.Use(handler.AuthMiddleware)
-		r.Get("/", handler.GetExercises(db))
-		r.Get("/{exerciseID}", login.AuthMiddleware(handler.GetExercise(db)))
-		r.Post("/{exerciseID}", login.AuthMiddleware(handler.SubmitExercise(db, *projectId, *region)))
+		r.Get("/", exercise.GetExercises(db))
+		r.Get("/{exerciseID}", login.AuthMiddleware(exercise.GetExercise(db)))
+		r.Post("/{exerciseID}", login.AuthMiddleware(exercise.SubmitExercise(db, *projectId, *region)))
 	})
 
 	fmt.Printf("Server is running at http://localhost:%s\n", *addr)

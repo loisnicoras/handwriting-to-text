@@ -1,4 +1,4 @@
-package handlers
+package exercise
 
 import (
 	"database/sql"
@@ -7,38 +7,8 @@ import (
 
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
+	util "github.com/loisnicoras/handwriting-to-text/util"
 )
-
-type Exercise struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	AudioPath string `json:"audio_path"`
-	Text      string `json:"text"`
-}
-
-type SubmitExerciseRequest struct {
-	ExerciseID int    `json:"exercise_id"`
-	UserID     int    `json:"user_id"`
-	GenText    string `json:"generate_text"`
-}
-
-type Candidate struct {
-	Index   int `json:"Index"`
-	Content struct {
-		Role  string   `json:"Role"`
-		Parts []string `json:"Parts"`
-	} `json:"Content"`
-	FinishReason     int            `json:"FinishReason"`
-	SafetyRatings    []SafetyRating `json:"SafetyRatings"`
-	FinishMessage    string         `json:"FinishMessage"`
-	CitationMetadata interface{}    `json:"CitationMetadata"`
-}
-
-type SafetyRating struct {
-	Category    int  `json:"Category"`
-	Probability int  `json:"Probability"`
-	Blocked     bool `json:"Blocked"`
-}
 
 func GetExercise(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +100,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 			return
 		}
 
-		score, err := calculateScore(exercise.Text, reqBody.GenText, projectId, region)
+		score, err := util.CalculateScore(exercise.Text, reqBody.GenText, projectId, region)
 		if err != nil {
 			http.Error(w, "Failed to calculate the score", http.StatusInternalServerError)
 			return

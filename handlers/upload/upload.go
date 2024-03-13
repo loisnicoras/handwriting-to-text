@@ -1,14 +1,13 @@
-package handlers
+package upload
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
 	"log"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	util "github.com/loisnicoras/handwriting-to-text/util"
 )
 
 const (
@@ -37,7 +36,7 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 		}
 		defer file.Close()
 
-		if !isImage(file) {
+		if !util.IsImage(file) {
 			http.Error(w, "", http.StatusUnsupportedMediaType)
 			return
 		}
@@ -53,13 +52,13 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 
 		// Create a file path for the uploaded file
 		filePath := filepath.Join(uploadDir, handler.Filename)
-		if err := saveFile(file, filePath); err != nil {
+		if err := util.SaveFile(file, filePath); err != nil {
 			log.Printf("Error saving file: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		imageText, err := extractTextFromImage(filePath, *apiKey)
+		imageText, err := util.ExtractTextFromImage(filePath, *apiKey)
 		if err != nil {
 			log.Printf("Error extracting text from image: %v", err)
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -84,43 +83,4 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 			log.Printf("Error creating response: %v", err)
 		}
 	}
-}
-
-func isImage(file multipart.File) bool {
-	// Read the first 512 bytes to determine the file type
-	buffer := make([]byte, 512)
-	_, err := file.Read(buffer)
-	if err != nil && err != io.EOF {
-		return false
-	}
-
-	// Reset the file pointer to the beginning
-	_, err = file.Seek(0, io.SeekStart)
-	if err != nil {
-		return false
-	}
-
-	// Check for image file types
-	fileType := http.DetectContentType(buffer)
-
-	// Check supported image formats
-	switch fileType {
-	case "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp", "image/tiff", "image/x-icon":
-		return true
-	default:
-		return false
-	}
-}
-
-func saveFile(source io.Reader, destination string) error {
-	outputFile, err := os.Create(destination)
-	if err != nil {
-		return fmt.Errorf("couldn't create destination file: %w", err)
-	}
-	defer outputFile.Close()
-
-	if _, err := io.Copy(outputFile, source); err != nil {
-		return fmt.Errorf("couldn't copy source file to destination file: %w", err)
-	}
-	return nil
 }

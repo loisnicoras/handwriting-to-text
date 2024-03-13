@@ -1,4 +1,4 @@
-package handlers
+package util
 
 import (
 	"context"
@@ -9,7 +9,25 @@ import (
 	"cloud.google.com/go/vertexai/genai"
 )
 
-func calculateScore(correctText, genText, projectId, region string) (int, error) {
+type SafetyRating struct {
+	Category    int  `json:"Category"`
+	Probability int  `json:"Probability"`
+	Blocked     bool `json:"Blocked"`
+}
+
+type Candidate struct {
+	Index   int `json:"Index"`
+	Content struct {
+		Role  string   `json:"Role"`
+		Parts []string `json:"Parts"`
+	} `json:"Content"`
+	FinishReason     int            `json:"FinishReason"`
+	SafetyRatings    []SafetyRating `json:"SafetyRatings"`
+	FinishMessage    string         `json:"FinishMessage"`
+	CitationMetadata interface{}    `json:"CitationMetadata"`
+}
+
+func CalculateScore(correctText, genText, projectId, region string) (int, error) {
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, projectId, region)
 	if err != nil {
