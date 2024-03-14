@@ -3,6 +3,7 @@ package exercise
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -107,9 +108,10 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 		}
 
 		// Insert data into users_results table
-		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, generate_text, result) VALUES (?, ?, ?, ?, ?)",
-			reqBody.UserID, exerciseID, reqBody.GenText, score)
+		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, photo_text, generate_text, result) VALUES (?, ?, ?, ?, ?)",
+			reqBody.UserID, exerciseID, "", reqBody.GenText, score)
 		if err != nil {
+			fmt.Print(err)
 			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)
 			return
 		}
