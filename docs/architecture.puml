@@ -3,12 +3,17 @@
 participant "Frontend" as Frontend
 participant "Backend" as Backend
 participant "API" as API
+participant "Gemini" as Gemini
 
-Frontend -> Frontend: Alege imagine
-Frontend -> Backend: Incarcă imaginea
-Backend -> API: Trimite imaginea
-API -> API: Extrage textul din imagine
-API -> Backend: Returnează textul extras
-Backend -> Frontend: Afișează textul extras
+Frontend -> Frontend: Choose an image
+Frontend -> Backend: Upload the image
+Backend -> API: Send the image
+API -> API: Text extraction
+API -> Backend: Return extracted text
+Backend -> Frontend: Display the extracted text
+Backend -> Gemini: Send the original text and the one written by the user
+Gemini -> Gemini: Obtain the score
+Gemini -> Backend: Receive the score
+Backend -> Frontend: Display the score
 
 @enduml

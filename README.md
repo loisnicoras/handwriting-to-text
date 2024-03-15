@@ -30,7 +30,10 @@ experts.
 - [Costs](#costs)
 
 # Application Architecture
-![Application architecture](doc/media/architecture.png)
+![Application architecture](docs/media/architecture.png)
+
+# Web Diagram
+![Application architecture](docs/media/handwriting-to-text.png)
 
 # Text Extraction API
 - Google Cloud Handwriting Detection with Optical Character Recognition (OCR) is a service provided by Google Cloud Platform (GCP) that allows users to extract text from handwritten documents, such as scanned images or photos. Here's an overview of how it works:
