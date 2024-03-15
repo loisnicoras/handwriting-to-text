@@ -10,8 +10,14 @@ import (
 	util "github.com/loisnicoras/handwriting-to-text/util"
 )
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func GetExercise(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+
 		exerciseID := chi.URLParam(r, "exerciseID")
 		var exercise Exercise
 
@@ -42,6 +48,8 @@ func GetExercise(db *sql.DB) http.HandlerFunc {
 
 func GetExercises(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+
 		rows, err := db.Query("SELECT id, exercise_name FROM exercises")
 		if err != nil {
 			http.Error(w, "failed to get data from exercises table", http.StatusInternalServerError)
@@ -82,6 +90,8 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 
 func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+
 		exerciseID := chi.URLParam(r, "exerciseID")
 		query := "SELECT id, text FROM exercises WHERE id = ?"
 		row := db.QueryRow(query, exerciseID)
