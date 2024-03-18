@@ -5,7 +5,9 @@ import Exercise from './Exercise'
 
 function App() {
   const [jsonData, setJsonData] = useState([]);
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   useEffect(() => {
     fetchData();
   }, []);
@@ -19,17 +21,43 @@ function App() {
       const data = await response.json();
       setJsonData(data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
+
   };
 
+  if (loading) {
+    return (
+      <div>
+        <h1>Loading...</h1>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+    <div>
+      <h1>Error: {error}</h1>
+    </div>
+    );
+  }
+
+  if (jsonData === null) {
+    return (
+    <div>
+      <h1>No data available</h1>
+    </div>
+    );
+  }
 
   return (
     <div>
       <h1>Data from Go Server</h1>
       <ul>
-        {jsonData.map((item) => (
-          <Exercise data={item} />
+        {jsonData.map((item, index) => (
+          <Exercise key={index} data={item} />
         ))}
       </ul>
     </div>
