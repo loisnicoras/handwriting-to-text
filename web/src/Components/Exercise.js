@@ -1,28 +1,26 @@
-import React, { useState } from "react";
+import React from "react";
 
-function Exercise(props){
-    const [fetchedData, setFetchedData] = useState(null);
+function Exercise(props) {
 
-    const getExercice = async (buttonId) => {
-        try {
-          // Perform the fetch request with the buttonId concatenated to the URL
-          const response = await fetch(`http://localhost:8080/exercises/${buttonId}`);
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          const data = await response.json();
-          setFetchedData(data);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-
-    return (
+    return(
         <div>
-            <button onClick={() => getExercice(props.data.id)}>{props.data.name}</button>
+            <audio controls src={props.data.audio_path}>
+                Your browser does not support the
+                <code>audio</code> element.
+            </audio>
+            <br />
+            <input type="file" id="takePhoto" accept="image/*" capture="camera" style={{ display: 'none' }} />
+            <button onClick={() => document.getElementById('takePhoto').click()}>
+            Take a picture
+            </button>
+            <br />
+            <input type="file" id="uploadPhoto" accept="image/*" style={{ display: 'none' }} />
+            <button onClick={() => document.getElementById('uploadPhoto').click()}>
+            Upload a picture
+            </button>
+            <br />
         </div>
-    );
+    )
 }
 
-
-export default Exercise; 
+export default Exercise;

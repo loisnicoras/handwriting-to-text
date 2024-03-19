@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Exercise from './Exercise'
+import ExerciseName from './ExerciseName'
 // import logo from './logo.svg';
 // import './App.css';
 
@@ -57,7 +57,7 @@ function App() {
       <h1>Data from Go Server</h1>
       <ul>
         {jsonData.map((item, index) => (
-          <Exercise key={index} data={item} />
+          <ExerciseName key={index} data={item} />
         ))}
       </ul>
     </div>
