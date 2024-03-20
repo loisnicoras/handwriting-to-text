@@ -29,12 +29,14 @@ func init() {
 }
 
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	url := googleOauthConfig.AuthCodeURL(oauthStateString)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		state := r.FormValue("state")
 		if state != oauthStateString {
 			http.Error(w, "Invalid state parameter", http.StatusBadRequest)
@@ -93,6 +95,7 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 
 func AuthMiddleware(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		if !isUserLoggedIn(r) {
 			// http.Redirect(w, r, "/login", http.StatusSeeOther)
 			w.WriteHeader(http.StatusUnauthorized)
