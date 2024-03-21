@@ -6,30 +6,30 @@ function ExerciseName(props){
     const [isClicked, setOnClick] = useState(false)
 
     const getExercice = async (buttonId) => {
-      try {
-        // Perform the fetch request with the buttonId concatenated to the URL
+      setOnClick(true) 
+        try {
+          // Perform the fetch request with the buttonId concatenated to the URL
           const response = await fetch(`http://localhost:8080/exercises/${buttonId}`);
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
-          
           const data = await response.json();
           setFetchedData(data);
           console.log(fetchedData)
-          setOnClick(true) 
         } catch (error) {
           console.error('Error fetching data:', error);
         }
       };
 
     return (
-      <div>
-        <button onClick={() => getExercice(props.data.id)}>{props.data.name}</button>
-        {isClicked && (
-          <Exercise data={fetchedData}/>
-        )}
-      </div>
+        <div>
+            <button onClick={() => getExercice(props.data.id)}>{props.data.name}</button>
+            {isClicked && (
+              <Exercise data={fetchedData}/>
+            )}
+        </div>
     );
 }
+
 
 export default ExerciseName; 

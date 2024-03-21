@@ -1,6 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
 
 function Exercise(props) {
+    const [getText, setGetText] = useState({})
+    const [file, setFile] = useState(null);
+
+    const handleFileChange = (event) => {
+        setFile(event.target.files[0]);
+    };
+
+    const handleChange = (event) => {
+        setGetText(event.target.value);
+    };
+
+    const obtainText = async () =>{
+        console.log("am intrat")
+        const formData = new FormData();
+        formData.append('file', file);
+        console.log(file)
+        try {
+            // Perform the fetch request with the buttonId concatenated to the URL
+            const response = await fetch(`http://localhost:8080/extract-text`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: formData
+            });
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setGetText(data);
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+    }
+
     return(
         <div>
             <p>{props.data.name}</p>
@@ -8,17 +43,17 @@ function Exercise(props) {
                 Your browser does not support the
                 <code>audio</code> element.
             </audio>
-            <br />
-            <input type="file" id="takePhoto" accept="image/*" capture="camera" style={{ display: 'none' }} />
-            <button onClick={() => document.getElementById('takePhoto').click()}>
-                Take a picture
-            </button>
-            <br />
-            <input type="file" id="uploadPhoto" accept="image/*" style={{ display: 'none' }} />
-            <button onClick={() => document.getElementById('uploadPhoto').click()}>
-                Upload a picture
-            </button>
-            <br />
+            <form onSubmit={obtainText}>
+                <br />
+                <input type="file" onChange={handleFileChange} accept="image/*" capture="camera" />
+                <br />
+                <input type="file" onChange={handleFileChange} accept="image/*" />
+                <br />
+                <input type="submit" value="Upload" />
+            </form>
+            {(getText != {}) && (
+                <textarea value={getText} onChange={handleChange} rows={4} cols={50} />
+            )}
         </div>
     )
 }
