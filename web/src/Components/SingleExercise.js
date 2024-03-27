@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 
 const SingleExercise = () => {
     const { id } = useParams();
@@ -62,6 +62,7 @@ const SingleExercise = () => {
 
     return (
         <div>
+            {<Link to={`/`}>back</Link>}
             <p>{exercise.name}</p>
             <audio controls src={exercise.audio_path}>
                 Your browser does not support the
