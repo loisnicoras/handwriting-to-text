@@ -1,39 +1,21 @@
-import { Routes, Route } from "react-router-dom"
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ExerciseList from './ExerciseList';
-import { BrowserRouter } from "react-router-dom";
+import SingleExercise from "./SingleExercise";
 
 function AppRouter() {
     return (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={ <ExerciseList/> } />
-            {/* <Route path="about" element={ <Users/> } /> */}
+            <Route path="/exercises/:id" element={ <SingleExercise/> } />
           </Routes>
         </BrowserRouter>
     )
 }
   
+export default AppRouter;
 
-// export default AppRouter;
 
-
-// import React from 'react';
-// import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-// import ExerciseList from './ExerciseList';
-// import SingleExercise from './SingleExercise';
-
-// const App = () => {
-//   return (
-//     <Router>
-//       <Switch>
-//         <Route exact path="/exercises" component={ExerciseList} />
-//         <Route path="/exercises/:id" component={SingleExercise} />
-//       </Switch>
-//     </Router>
-//   );
-// };
-
-// export default App;
 
 // import React from 'react';
 // import { useParams } from 'react-router-dom';

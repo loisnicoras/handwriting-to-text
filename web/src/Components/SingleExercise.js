@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
-function Exercise(props) {
+const SingleExercise = () => {
+    const { id } = useParams();
+    const [exercise, setExercise] = useState([]);
     const [getText, setGetText] = useState({})
     const [file, setFile] = useState(null);
 
@@ -13,10 +16,8 @@ function Exercise(props) {
     };
 
     const obtainText = async () =>{
-        console.log("am intrat")
         const formData = new FormData();
         formData.append('file', file);
-        console.log(file)
         try {
             // Perform the fetch request with the buttonId concatenated to the URL
             const response = await fetch(`http://localhost:8080/extract-text`, {
@@ -27,19 +28,42 @@ function Exercise(props) {
                 body: formData
             });
             if (!response.ok) {
-              throw new Error('Network response was not ok');
+                throw new Error('Network response was not ok');
             }
             const data = await response.json();
             setGetText(data);
-          } catch (error) {
+            } catch (error) {
             console.error('Error fetching data:', error);
-          }
+        }
     }
 
-    return(
+    useEffect(() => {
+        const getExercice = async () => {
+            try {
+                // Perform the fetch request with the buttonId concatenated to the URL
+                const response = await fetch(`http://localhost:8080/exercises/${id}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                setExercise(data);
+                console.log(exercise)
+                } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+            };
+        getExercice();
+        return () => setExercise(null);
+    }, [id]);
+
+    if (!exercise) {
+        return <div>Loading...</div>
+    }
+
+    return (
         <div>
-            <p>{props.data.name}</p>
-            <audio controls src={props.data.audio_path}>
+            <p>{exercise.name}</p>
+            <audio controls src={exercise.audio_path}>
                 Your browser does not support the
                 <code>audio</code> element.
             </audio>
@@ -55,7 +79,7 @@ function Exercise(props) {
                 <textarea value={getText} onChange={handleChange} rows={4} cols={50} />
             )}
         </div>
-    )
+    )    
 }
 
-export default Exercise;
+export default SingleExercise;

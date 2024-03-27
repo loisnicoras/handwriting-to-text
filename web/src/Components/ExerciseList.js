@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import ExerciseName from './ExerciseName'
-// import logo from './logo.svg';
-// import './App.css';
+import { Link } from "react-router-dom";
 
 function ExerciseList() {
   const [jsonData, setJsonData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fetchedData, setFetchedData] = useState([]);
   
   useEffect(() => {
     fetchData();
@@ -27,6 +26,7 @@ function ExerciseList() {
     }
 
   };
+ 
 
   if (loading) {
     return (
@@ -57,7 +57,9 @@ function ExerciseList() {
       <h1>Data from Go Server</h1>
       <ul>
         {jsonData.map((item, index) => (
-          <ExerciseName key={index} data={item} />
+          <li key={item.id}>
+            <Link to={`/exercises/${item.id}`}>{item.name}</Link>
+          </li>
         ))}
       </ul>
     </div>
