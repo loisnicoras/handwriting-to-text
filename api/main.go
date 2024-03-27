@@ -15,19 +15,16 @@ import (
 )
 
 func connectToDB(username, password, hostname, port, dbname string) (*sql.DB, error) {
-	// Create a connection string
 	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, hostname, port, dbname)
 
-	// Open a database connection
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open a database connection: %w", err)
 	}
 
-	// Check if the connection is successful
 	err = db.Ping()
 	if err != nil {
-		db.Close() // Close the connection before returning the error
+		db.Close() 
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
@@ -35,15 +32,15 @@ func connectToDB(username, password, hostname, port, dbname string) (*sql.DB, er
 }
 
 func main() {
-	apiKey := flag.String("apiKey", "", "Specify an API key")
 	addr := flag.String("addr", "8080", "Specify the server address and port")
+	apiKey := flag.String("apiKey", "", "Specify an API key")
+	projectId := flag.String("projectId", "moonlit-shadow-325207", "Specify the google cloud project id")
+	region := flag.String("region", "us-central1", "Specify the vertex ai region")
 	dbUser := flag.String("dbUser", "lois", "Specify the database user")
 	dbPass := flag.String("dbPass", "emanuel", "Specify the database password")
 	dbHost := flag.String("dbHost", "localhost", "Specify the database hostname")
 	dbPort := flag.String("dbPort", "3306", "Specify the database port")
 	dbName := flag.String("dbName", "my_database", "Specify the database name")
-	projectId := flag.String("projectId", "moonlit-shadow-325207", "Specify the google cloud project id")
-	region := flag.String("region", "us-central1", "Specify the vertex ai region")
 
 	flag.Parse()
 
@@ -61,7 +58,6 @@ func main() {
 	r.Post("/extract-text", upload.UploadHandler(apiKey))
 
 	r.Route("/exercises", func(r chi.Router) {
-		// r.Use(handler.AuthMiddleware)
 		r.Get("/", exercise.GetExercises(db))
 		r.Get("/{exerciseID}", login.AuthMiddleware(exercise.GetExercise(db)))
 		r.Post("/{exerciseID}", login.AuthMiddleware(exercise.SubmitExercise(db, *projectId, *region)))
