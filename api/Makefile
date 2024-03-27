@@ -23,14 +23,15 @@ removemysql:
 	@sudo docker rm mysql-container
 	
 run:
-	@go run main.go --apiKey=$(API_KEY) --addr=$(SERVER_ADDR) \
+	@go run main.go --addr=$(SERVER_ADDR) \
+	--apiKey=$(API_KEY) \
+	--projectId=$(PROJECTID) \
+	--region=$(REGION) 
 	--dbUser=$(MYSQL_USER) \
 	--dbPass=$(MYSQL_PASSWORD) \
 	--dbHost=$(MYSQL_HOST) \
-	--dbPort=$(MYSQL_PORT)
-	--dbName=$(MYSQL_USER)
-	--projectId=$(PROJECTID)
-	--region=$(REGION)
+	--dbPort=$(MYSQL_PORT) \
+	--dbName=$(MYSQL_USER) \
 
 install:
 	@sudo curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b . v1.56.2
