@@ -3,7 +3,7 @@ import ExerciseName from './ExerciseName'
 // import logo from './logo.svg';
 // import './App.css';
 
-function App() {
+function ExerciseList() {
   const [jsonData, setJsonData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,4 +64,4 @@ function App() {
   );
 }
 
-export default App;
+export default ExerciseList;
