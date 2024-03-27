@@ -34,13 +34,13 @@ run:
 	--dbName=$(MYSQL_USER) \
 
 install:
-	@sudo curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b . v1.56.2
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b . v1.56.2
 
 lint:
-	@./golangci-lint run -v ./handlers/
+	@./golangci-lint run -v ./handlers/*
 	@./golangci-lint run -v main.go
 
 clean:
-	@sudo rm ./golangci-lint 
+	@rm ./golangci-lint 
 
 .PHONY: image mysql dump dropdb run install lint clean

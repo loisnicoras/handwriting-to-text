@@ -87,7 +87,11 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 		}
 
 		session.Values["userID"] = userInfo["sub"].(string)
-		session.Save(r, w)
+
+		err = session.Save(r, w)
+		if err != nil {
+			http.Error(w, "Error saving session", http.StatusInternalServerError)
+		}
 
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	}
