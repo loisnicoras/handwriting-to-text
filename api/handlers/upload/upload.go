@@ -2,6 +2,7 @@ package upload
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +20,7 @@ const (
 func UploadHandler(apiKey *string) http.HandlerFunc {
 	// Return a function compatible with http.HandlerFunc
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		// Parse the multipart form with a 20MB file size limit
 		err := r.ParseMultipartForm(maxFileSize)
 		if err != nil {
@@ -31,6 +32,7 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 		// Retrieve the uploaded file from the form
 		file, handler, err := r.FormFile(fileField)
 		if err != nil {
+			fmt.Println("Error retrieving file:", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -45,6 +47,7 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 			err := os.Mkdir(uploadDir, os.ModePerm)
 			if err != nil {
+				log.Printf("Error creating 'uploads' directory: %v", err)
 				http.Error(w, "Error creating 'uploads' directory:", http.StatusInternalServerError)
 				return
 			}
@@ -64,21 +67,20 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-
-		data := map[string]interface{}{
+		
+		responseData := map[string]interface{}{
 			"text": imageText,
 		}
-
-		jsonData, err := json.Marshal(data)
+		
+		jsonResponse, err := json.Marshal(responseData)
 		if err != nil {
 			log.Printf("Error marshaling JSON: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-
-		_, err = w.Write(jsonData)
+		
+		w.Header().Set("Content-Type", "application/json")
+		_, err = w.Write(jsonResponse)
 		if err != nil {
 			log.Printf("Error creating response: %v", err)
 		}

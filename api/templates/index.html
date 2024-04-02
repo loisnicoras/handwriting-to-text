@@ -6,14 +6,14 @@
     <form action="/extract-text" method="post" enctype="multipart/form-data">
         <label for="photo">Upload a photo</label>
         <input type="file" name="image" accept="image/*">
-        <br>
+        <!-- <br>
         <label class="takeAPhoto" style="display: none;" for="photo">Take a Photo</label>
         <input style="display: none;" class="takeAPhoto" type="file" accept="image/*" capture="environment">
-        <br>
-        <input type="submit" value="Upload">
+        <br> -->
+        <input type="submit" value="Submit">
 
     </form>
-    <script>
+    <!-- <script>
         if (window.innerWidth <= 768 && window.innerHeight <= 1024) {
             var elems = document.getElementsByClassName("takeAPhoto")
             Array.from(elems).forEach((x) => {
@@ -22,6 +22,6 @@
                 }
             })
         }
-    </script>
+    </script> -->
 </body>
 </html>
