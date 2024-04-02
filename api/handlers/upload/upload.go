@@ -18,10 +18,9 @@ const (
 )
 
 func UploadHandler(apiKey *string) http.HandlerFunc {
-	// Return a function compatible with http.HandlerFunc
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		// Parse the multipart form with a 20MB file size limit
+
 		err := r.ParseMultipartForm(maxFileSize)
 		if err != nil {
 			log.Printf("Error parsing image: %v", err)
@@ -29,7 +28,6 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 			return
 		}
 
-		// Retrieve the uploaded file from the form
 		file, handler, err := r.FormFile(fileField)
 		if err != nil {
 			fmt.Println("Error retrieving file:", err)
@@ -43,7 +41,6 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 			return
 		}
 
-		// Create or use the "uploads" directory to store the uploaded files
 		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 			err := os.Mkdir(uploadDir, os.ModePerm)
 			if err != nil {
@@ -53,7 +50,6 @@ func UploadHandler(apiKey *string) http.HandlerFunc {
 			}
 		}
 
-		// Create a file path for the uploaded file
 		filePath := filepath.Join(uploadDir, handler.Filename)
 		if err := util.SaveFile(file, filePath); err != nil {
 			log.Printf("Error saving file: %v", err)
