@@ -91,7 +91,7 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 
 func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		exerciseID := chi.URLParam(r, "exerciseID")
 		query := "SELECT id, text FROM exercises WHERE id = ?"

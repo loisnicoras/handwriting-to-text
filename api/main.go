@@ -60,7 +60,7 @@ func main() {
 	r.Route("/exercises", func(r chi.Router) {
 		r.Get("/", exercise.GetExercises(db))
 		r.Get("/{exerciseID}", exercise.GetExercise(db))
-		r.Post("/{exerciseID}", login.AuthMiddleware(exercise.SubmitExercise(db, *projectId, *region)))
+		r.Post("/{exerciseID}", exercise.SubmitExercise(db, *projectId, *region))
 	})
 
 	fmt.Printf("Server is running at http://localhost:%s\n", *addr)
