@@ -7,11 +7,11 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	exercise "github.com/loisnicoras/handwriting-to-text/handlers/exercise"
-	upload "github.com/loisnicoras/handwriting-to-text/handlers/upload"
-	login "github.com/loisnicoras/handwriting-to-text/handlers/login"
 	home "github.com/loisnicoras/handwriting-to-text/handlers/home"
-
+	login "github.com/loisnicoras/handwriting-to-text/handlers/login"
+	upload "github.com/loisnicoras/handwriting-to-text/handlers/upload"
 )
 
 func connectToDB(username, password, hostname, port, dbname string) (*sql.DB, error) {
@@ -24,7 +24,7 @@ func connectToDB(username, password, hostname, port, dbname string) (*sql.DB, er
 
 	err = db.Ping()
 	if err != nil {
-		db.Close() 
+		db.Close()
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
@@ -51,6 +51,14 @@ func main() {
 	}
 
 	r := chi.NewRouter()
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Allow all origins
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"}, // Allow all headers
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum age for preflight requests
+	})
+	r.Use(cors.Handler)
 
 	r.Get("/", home.HomeHandler)
 	r.Get("/login", login.HandleGoogleLogin)
