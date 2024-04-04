@@ -19,9 +19,8 @@ const SingleExercise = () => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            const data = await response.text(); // assuming the response is plain text
-            console.log(response)
-            setGenText(data);
+            const data = await response.json(); // assuming the response is plain text
+            setGenText(data.text);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -87,7 +86,7 @@ const SingleExercise = () => {
             </audio>
             <input type="file" name="image" onChange={handleFileChange} accept="image/*" />
             <br />
-            <textarea value={genText} onChange={handleChange} rows={4} cols={50} />
+            <textarea value={genText} onChange={handleChange} rows={10} cols={50} />
             <br />
             <input type="submit" onClick={getResponse}/>
         </div>
