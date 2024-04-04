@@ -7,6 +7,7 @@ const SingleExercise = () => {
     const [genText, setGenText] = useState("");
     const [file, setFile] = useState(null);
     const [score, setScore] = useState(0)
+    const [inputClicked, setInputClicked] = useState(false);
 
     const handleFileChange = async (event) => {
         setFile(event.target.files[0]);
@@ -32,6 +33,7 @@ const SingleExercise = () => {
     };
 
     const getResponse = async () => {
+        setInputClicked(true);
         const requestData = {
             exercise_id: Number(id),
             user_id: 1,
@@ -45,9 +47,9 @@ const SingleExercise = () => {
                 },
                 body: JSON.stringify(requestData)
             });
-            // if (!response.ok) {
-            //     throw new Error('Network response was not ok');
-            // }
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
             const data = await response.json();
             setScore(data)
         } catch (error) {
@@ -90,6 +92,9 @@ const SingleExercise = () => {
             <br />
             <input type="submit" onClick={getResponse}/>
             {(() => {
+                if (inputClicked && score == 0) {
+                    return <div>Loading...</div>
+                }
                 if (score != 0) {
                     return <p> This is your score: {score}</p>
                 }
