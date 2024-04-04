@@ -5,12 +5,12 @@ const SingleExercise = () => {
     const { id } = useParams();
     const [exercise, setExercise] = useState([]);
     const [genText, setGenText] = useState("");
-    const [file, setFile] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
     const [score, setScore] = useState(0)
     const [inputClicked, setInputClicked] = useState(false);
 
     const handleFileChange = async (event) => {
-        setFile(event.target.files[0]);
+        setSelectedFile(event.target.files[0]);
         const formData = new FormData();
         formData.append("image", event.target.files[0]);
         try {
@@ -99,6 +99,7 @@ const SingleExercise = () => {
                 if (inputClicked && score == 0) {
                     return <div>Loading...</div>
                 }
+                
                 if (score != 0) {
                     return <p> This is your score: {score}</p>
                 }
