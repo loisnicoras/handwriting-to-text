@@ -7,11 +7,11 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/go-chi/cors"
 	exercise "github.com/loisnicoras/handwriting-to-text/handlers/exercise"
 	home "github.com/loisnicoras/handwriting-to-text/handlers/home"
 	login "github.com/loisnicoras/handwriting-to-text/handlers/login"
 	upload "github.com/loisnicoras/handwriting-to-text/handlers/upload"
+	"github.com/rs/cors"
 )
 
 func connectToDB(username, password, hostname, port, dbname string) (*sql.DB, error) {
@@ -55,7 +55,7 @@ func main() {
 		AllowedOrigins:   []string{"*"}, // Allow all origins
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"}, // Allow all headers
-		AllowCredentials: false,
+		AllowCredentials: true,
 		MaxAge:           300, // Maximum age for preflight requests
 	})
 	r.Use(cors.Handler)
@@ -67,8 +67,8 @@ func main() {
 
 	r.Route("/exercises", func(r chi.Router) {
 		r.Get("/", exercise.GetExercises(db))
-		r.Get("/{exerciseID}", exercise.GetExercise(db))
-		r.Post("/{exerciseID}", exercise.SubmitExercise(db, *projectId, *region))
+		r.Get("/{exerciseID}", login.AuthMiddleware(exercise.GetExercise(db)))
+		r.Post("/{exerciseID}", login.AuthMiddleware(exercise.SubmitExercise(db, *projectId, *region)))
 	})
 
 	fmt.Printf("Server is running at http://localhost:%s\n", *addr)

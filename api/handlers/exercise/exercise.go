@@ -13,6 +13,10 @@ import (
 
 func GetExercise(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		// w.Header().Set("Access-Control-Allow-Credentials", "true")
+
 		exerciseID := chi.URLParam(r, "exerciseID")
 		var exercise Exercise
 
@@ -37,13 +41,16 @@ func GetExercise(db *sql.DB) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write(exerciseJSON)
 		if err != nil {
-            log.Printf("Error writing response: %v", err)
+			log.Printf("Error writing response: %v", err)
 		}
 	}
 }
 
 func GetExercises(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+
 		rows, err := db.Query("SELECT id, exercise_name FROM exercises")
 		if err != nil {
 			log.Printf("Error retrieving exercises: %v", err)
@@ -83,6 +90,9 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 
 func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// origin := r.Header.Get("Origin")
+		// w.Header().Set("Access-Control-Allow-Origin", origin)
+
 		exerciseID := chi.URLParam(r, "exerciseID")
 		query := "SELECT id, text FROM exercises WHERE id = ?"
 		row := db.QueryRow(query, exerciseID)
@@ -91,14 +101,14 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 		err := row.Scan(&exercise.ID, &exercise.Text)
 		if err != nil {
 			log.Printf("Error retrieving exercise: %v", err)
-            http.Error(w, "Exercise not found", http.StatusInternalServerError)
+			http.Error(w, "Exercise not found", http.StatusInternalServerError)
 			return
 		}
 
 		var reqBody SubmitExerciseRequest
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 			log.Printf("Error decoding JSON: %v", err)
-            http.Error(w, "Bad Request", http.StatusBadRequest)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
@@ -120,7 +130,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(score); err != nil {
-            log.Printf("Error encoding JSON: %v", err)
+			log.Printf("Error encoding JSON: %v", err)
 		}
 	}
 }
