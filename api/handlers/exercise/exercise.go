@@ -15,7 +15,6 @@ func GetExercise(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		w.Header().Set("Access-Control-Allow-Origin", origin)
-		// w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		exerciseID := chi.URLParam(r, "exerciseID")
 		var exercise Exercise
@@ -90,8 +89,8 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 
 func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// origin := r.Header.Get("Origin")
-		// w.Header().Set("Access-Control-Allow-Origin", origin)
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
 
 		exerciseID := chi.URLParam(r, "exerciseID")
 		query := "SELECT id, text FROM exercises WHERE id = ?"
