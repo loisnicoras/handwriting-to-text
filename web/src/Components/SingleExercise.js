@@ -6,6 +6,7 @@ const SingleExercise = () => {
     const [exercise, setExercise] = useState([]);
     const [genText, setGenText] = useState("");
     const [file, setFile] = useState(null);
+    const [score, setScore] = useState(0)
 
     const handleFileChange = async (event) => {
         setFile(event.target.files[0]);
@@ -39,17 +40,16 @@ const SingleExercise = () => {
         try {
             const response = await fetch(`http://localhost:8080/exercises/${id}`, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(requestData)
             });
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            // if (!response.ok) {
+            //     throw new Error('Network response was not ok');
+            // }
             const data = await response.json();
-            console.log(data)
+            setScore(data)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -89,6 +89,11 @@ const SingleExercise = () => {
             <textarea value={genText} onChange={handleChange} rows={10} cols={50} />
             <br />
             <input type="submit" onClick={getResponse}/>
+            {(() => {
+                if (score != 0) {
+                    return <p> This is your score: {score}</p>
+                }
+            })()}
         </div>
     )    
 }
