@@ -45,6 +45,7 @@ const SingleExercise = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: "include", 
                 body: JSON.stringify(requestData)
             });
             if (!response.ok) {
@@ -60,7 +61,10 @@ const SingleExercise = () => {
     useEffect(() => {
         const getExercice = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/exercises/${id}`);
+                const response = await fetch(`http://localhost:8080/exercises/${id}`, {
+                    method: "GET",
+                    credentials: "include"
+                });
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
