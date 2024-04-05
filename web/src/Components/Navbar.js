@@ -31,12 +31,14 @@ function Navbar() {
             }    
         })();
     })
-
+    
     if (isLogged) {
         return (
             <nav>
                 <p>{userName}</p>
                 <img src={userAvatarUrl} alt="Logo"/>
+                <br />
+                <a href="http://localhost:8080/logout">logout</a>
             </nav>
         );
     } else {
