@@ -62,6 +62,7 @@ func main() {
 
 	r.Get("/", home.HomeHandler)
 	r.Get("/login", login.HandleGoogleLogin)
+	r.Get("/logout", login.LogOut)
 	r.Get("/callback", login.HandleGoogleCallback(db))
 	r.Get("/user-data", login.GetUserData(db))
 	r.Post("/extract-text", upload.UploadHandler(apiKey))

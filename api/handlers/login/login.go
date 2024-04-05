@@ -96,6 +96,24 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+func LogOut(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		http.Error(w, "Failed to retrieve session", http.StatusInternalServerError)
+		return
+	}
+
+	delete(session.Values, "userID")
+
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, "Failed to save session", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "http://localhost:3000/", http.StatusSeeOther)
+}
+
 func AuthMiddleware(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
