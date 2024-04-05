@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -109,6 +108,52 @@ func AuthMiddleware(next http.Handler) http.HandlerFunc {
 	})
 }
 
+func GetUserAvatarURL(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+
+		if !isUserLoggedIn(r) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		session, err := store.Get(r, "session-name")
+		if err != nil {
+			http.Error(w, "Failed to retrieve session", http.StatusInternalServerError)
+			return
+		}
+
+		userID, ok := session.Values["userID"].(string)
+		if !ok {
+			http.Error(w, "User ID not found in session", http.StatusBadRequest)
+			return
+		}
+
+		query := "SELECT avatar_url FROM users WHERE sub = ?"
+		var avatarURL string
+
+		err = db.QueryRow(query, userID).Scan(&avatarURL)
+		if err != nil {
+			http.Error(w, "Failed to retrieve avatar URL from database", http.StatusInternalServerError)
+			return
+		}
+
+		user := User{
+			AvatarURL: avatarURL,
+		}
+
+		jsonData, err := json.Marshal(user)
+		if err != nil {
+			http.Error(w, "Failed to marshal JSON response", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonData)
+	}
+}
+
 func isUserLoggedIn(r *http.Request) bool {
 	session, err := store.Get(r, "session-name")
 	if err != nil {
@@ -117,8 +162,6 @@ func isUserLoggedIn(r *http.Request) bool {
 	}
 
 	userID, ok := session.Values["userID"].(string)
-	fmt.Println(userID)
-
 	return ok && userID != ""
 }
 
