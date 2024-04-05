@@ -2,26 +2,50 @@ import React, { useEffect, useState } from "react";
 import '../css/Navbar.css';
 
 function Navbar() {
+    const [userName, setUserName] = useState("");
     const [userAvatarUrl, setUserAvatarUrl] = useState("");
+    const [isLogged, setIsLogged] = useState(false)
 
     useEffect(() => {
-        fetch("http://localhost:8080/avatar", {
-            method: "GET",
-            credentials: "include"
+        (async () => {
+            try {
 
-        })
-        .then(res => res.json())
-        .then(data => {
-            setUserAvatarUrl(data.AvatarURL)
-        })
-    
+                const res = await fetch("http://localhost:8080/user-data", {
+                    method: "GET",
+                    credentials: "include"
+                })
+
+                if (res.status == 200) {
+                    setIsLogged(true)
+                } else if (res.status == 402) {
+                    setIsLogged(false)
+                } else {
+                    throw new Error("Failed to fetch user data");
+                }
+                
+                const result = await res.json()
+                setUserName(result.name)
+                setUserAvatarUrl(result.avatar_url)
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }    
+        })();
     })
 
-    return (
+    if (isLogged) {
+        return (
+            <nav>
+                <p>{userName}</p>
+                <img src={userAvatarUrl} alt="Logo"/>
+            </nav>
+        );
+    } else {
         <nav>
             <a href="http://localhost:8080/login">login</a>
         </nav>
-    );
+    }
+
+   
 }
 
 export default Navbar;
