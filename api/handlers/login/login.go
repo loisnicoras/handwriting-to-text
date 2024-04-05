@@ -108,7 +108,7 @@ func AuthMiddleware(next http.Handler) http.HandlerFunc {
 	})
 }
 
-func GetUserAvatarURL(db *sql.DB) http.HandlerFunc {
+func GetUserData(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		w.Header().Set("Access-Control-Allow-Origin", origin)
@@ -130,16 +130,18 @@ func GetUserAvatarURL(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		query := "SELECT avatar_url FROM users WHERE sub = ?"
-		var avatarURL string
+		query := "SELECT name, email, avatar_url FROM users WHERE sub = ?"
+		var name, email, avatarURL string
 
-		err = db.QueryRow(query, userID).Scan(&avatarURL)
+		err = db.QueryRow(query, userID).Scan(&name, &email, &avatarURL)
 		if err != nil {
 			http.Error(w, "Failed to retrieve avatar URL from database", http.StatusInternalServerError)
 			return
 		}
 
 		user := User{
+			Name:      name,
+			Email:     email,
 			AvatarURL: avatarURL,
 		}
 
