@@ -5,12 +5,10 @@ const SingleExercise = () => {
     const { id } = useParams();
     const [exercise, setExercise] = useState([]);
     const [genText, setGenText] = useState("");
-    const [selectedFile, setSelectedFile] = useState(null);
     const [score, setScore] = useState(0)
     const [inputClicked, setInputClicked] = useState(false);
 
     const handleFileChange = async (event) => {
-        setSelectedFile(event.target.files[0]);
         const formData = new FormData();
         formData.append("image", event.target.files[0]);
         try {
@@ -59,25 +57,34 @@ const SingleExercise = () => {
     }
 
     useEffect(() => {
-        const getExercice = async () => {
-            try {
-                const response = await fetch(`http://localhost:8080/exercises/${id}`, {
-                    method: "GET",
-                    credentials: "include"
-                });
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                setExercise(data);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-        getExercice();
+        fetchExercise();
         return () => setExercise(null);
     }, [id]);
 
+    const fetchExercise = async () => {
+        try {
+            const response = await fetch(`http://localhost:8080/exercises/${id}`, {
+                method: "GET",
+                credentials: "include"
+            });
+            if (!response.ok) {
+                console.log("ASDfasdf")
+                if (response.status === 401) {
+                    // Redirect to login page if not logged in
+                    // setIsLoggedIn(false);
+                    window.location.href = 'http://localhost:8080/login';
+                    return;
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            }
+            const data = await response.json();
+            setExercise(data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+    
     if (!exercise) {
         return <div>Loading...</div>
     }
