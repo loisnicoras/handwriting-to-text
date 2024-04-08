@@ -96,22 +96,33 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func LogOut(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		http.Error(w, "Failed to retrieve session", http.StatusInternalServerError)
-		return
+func LogOut(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, err := store.Get(r, "session-name")
+
+		if err != nil {
+			http.Error(w, "Failed to retrieve session", http.StatusInternalServerError)
+			return
+		}
+
+		// Clear all session data
+		session.Options.MaxAge = -1
+		err = session.Save(r, w)
+		if err != nil {
+			http.Error(w, "Failed to save session", http.StatusInternalServerError)
+			return
+		}
+
+		sub := session.Values["userID"]
+		query := "DELETE FROM users WHERE sub = ?"
+
+		_, err = db.Exec(query, sub)
+		if err != nil {
+			http.Error(w, "Failed to delete user", http.StatusInternalServerError)
+		}
+
+		http.Redirect(w, r, "http://localhost:3000/", http.StatusSeeOther)
 	}
-
-	delete(session.Values, "userID")
-
-	err = session.Save(r, w)
-	if err != nil {
-		http.Error(w, "Failed to save session", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "http://localhost:3000/", http.StatusSeeOther)
 }
 
 func AuthMiddleware(next http.Handler) http.HandlerFunc {
