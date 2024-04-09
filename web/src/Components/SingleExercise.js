@@ -65,6 +65,7 @@ const SingleExercise = () => {
         try {
             const response = await fetch(`http://localhost:8080/exercises/${id}`, {
                 method: "GET",
+                credentials: "include", 
             });
             console.log(response)
             if (!response.ok) {
