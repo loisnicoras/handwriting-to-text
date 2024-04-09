@@ -8,7 +8,6 @@ type Exercise struct {
 }
 
 type SubmitExerciseRequest struct {
-	ExerciseID int    `json:"exercise_id"`
 	UserID     int    `json:"user_id"`
-	GenText    string `json:"generate_text"`
+	GenText    string `json:"gen_text"`
 }

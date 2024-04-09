@@ -19,13 +19,20 @@ func GetExercise(db *sql.DB) http.HandlerFunc {
 		exerciseID := chi.URLParam(r, "exerciseID")
 		var exercise Exercise
 
-		query := "SELECT id, exercise_name, audio_path FROM exercises WHERE id = ?"
-		row := db.QueryRow(query, exerciseID)
+		preparedQuery, err := db.Prepare("SELECT id, exercise_name, audio_path FROM exercises WHERE id = ?")
+		if err != nil {
+			log.Printf("Error preparing query: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 
-		err := row.Scan(&exercise.ID, &exercise.Name, &exercise.AudioPath)
+		defer preparedQuery.Close()
+
+		row := preparedQuery.QueryRow(exerciseID)
+		err = row.Scan(&exercise.ID, &exercise.Name, &exercise.AudioPath)
 		if err != nil {
 			log.Printf("Error retrieving exercise: %v", err)
-			http.Error(w, "Exercise not found", http.StatusInternalServerError)
+			http.Error(w, "Exercise not found", http.StatusNotFound)
 			return
 		}
 
@@ -119,7 +126,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 		}
 
 		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, photo_text, generate_text, result) VALUES (?, ?, ?, ?, ?)",
-			reqBody.UserID, exerciseID, "", reqBody.GenText, score)
+			exerciseID, exerciseID, "", reqBody.GenText, score)
 		if err != nil {
 			log.Printf("Error inserting data: %v", err)
 			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)

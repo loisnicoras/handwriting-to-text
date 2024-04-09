@@ -69,7 +69,7 @@ func main() {
 
 	r.Route("/exercises", func(r chi.Router) {
 		r.Get("/", exercise.GetExercises(db))
-		r.Get("/{exerciseID}", login.AuthMiddleware(exercise.GetExercise(db)))
+		r.Get("/{exerciseID}", exercise.GetExercise(db))
 		r.Post("/{exerciseID}", login.AuthMiddleware(exercise.SubmitExercise(db, *projectId, *region)))
 	})
 
