@@ -8,8 +8,11 @@ import (
 
 	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/sessions"
 	util "github.com/loisnicoras/handwriting-to-text/util"
 )
+
+var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
 func GetExercise(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -99,12 +102,24 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 		origin := r.Header.Get("Origin")
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 
+		session, err := store.Get(r, "session-name")
+		if err != nil {
+			http.Error(w, "Failed to retrieve session", http.StatusInternalServerError)
+			return
+		}
+
+		userID, ok := session.Values["userID"].(string)
+		if !ok {
+			http.Error(w, "User ID not found in session", http.StatusBadRequest)
+			return
+		}
+
 		exerciseID := chi.URLParam(r, "exerciseID")
 		query := "SELECT id, text FROM exercises WHERE id = ?"
 		row := db.QueryRow(query, exerciseID)
 
 		var exercise Exercise
-		err := row.Scan(&exercise.ID, &exercise.Text)
+		err = row.Scan(&exercise.ID, &exercise.Text)
 		if err != nil {
 			log.Printf("Error retrieving exercise: %v", err)
 			http.Error(w, "Exercise not found", http.StatusInternalServerError)
@@ -126,7 +141,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 		}
 
 		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, photo_text, generate_text, result) VALUES (?, ?, ?, ?, ?)",
-			exerciseID, exerciseID, "", reqBody.GenText, score)
+			userID, exerciseID, "", reqBody.GenText, score)
 		if err != nil {
 			log.Printf("Error inserting data: %v", err)
 			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)
