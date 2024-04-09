@@ -129,7 +129,8 @@ func LogOut(db *sql.DB) http.HandlerFunc {
 
 func AuthMiddleware(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
 		if !isUserLoggedIn(r) {
 			// http.Redirect(w, r, "/login", http.StatusSeeOther)
 			w.WriteHeader(http.StatusUnauthorized)
