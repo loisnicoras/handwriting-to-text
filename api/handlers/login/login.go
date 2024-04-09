@@ -28,14 +28,16 @@ func init() {
 }
 
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	origin := r.Header.Get("Origin")
+	w.Header().Set("Access-Control-Allow-Origin", origin)
 	url := googleOauthConfig.AuthCodeURL(oauthStateString)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
 		state := r.FormValue("state")
 		if state != oauthStateString {
 			http.Error(w, "Invalid state parameter", http.StatusBadRequest)
@@ -113,13 +115,13 @@ func LogOut(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		sub := session.Values["userID"]
-		query := "DELETE FROM users WHERE sub = ?"
+		// sub := session.Values["userID"]
+		// query := "DELETE FROM users WHERE sub = ?"
 
-		_, err = db.Exec(query, sub)
-		if err != nil {
-			http.Error(w, "Failed to delete user", http.StatusInternalServerError)
-		}
+		// _, err = db.Exec(query, sub)
+		// if err != nil {
+		// 	http.Error(w, "Failed to delete user", http.StatusInternalServerError)
+		// }
 
 		http.Redirect(w, r, "http://localhost:3000/", http.StatusSeeOther)
 	}
