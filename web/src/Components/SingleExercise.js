@@ -65,14 +65,11 @@ const SingleExercise = () => {
         try {
             const response = await fetch(`http://localhost:8080/exercises/${id}`, {
                 method: "GET",
-                credentials: "include"
             });
+            console.log(response)
             if (!response.ok) {
-                console.log("ASDfasdf")
                 if (response.status === 401) {
-                    // Redirect to login page if not logged in
-                    // setIsLoggedIn(false);
-                    window.location.href = 'http://localhost:8080/login';
+                    window.location.href = 'http://localhost:8080/login'
                     return;
                 } else {
                     throw new Error('Network response was not ok');
@@ -104,7 +101,7 @@ const SingleExercise = () => {
             <input type="submit" onClick={getResponse}/>
             {(() => {
                 if (inputClicked && score == 0) {
-                    return <div>Loading...</div>
+                    return <div>Loading score...</div>
                 }
                 
                 if (score != 0) {

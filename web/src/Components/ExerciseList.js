@@ -27,26 +27,26 @@ function ExerciseList() {
 
   };
   
-  // const isUserLogged = () => {
-  //   fetch('http://localhost:8080/exercises/1', {
-  //     method: 'GET',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       // Add any other headers as needed
-  //     },
-  //     credentials: 'include' // Include cookies in the request
-  //   })
-  //   .then(response => {
-  //     if (response.status === 401) {
-  //       // Unauthorized, redirect to login page
-  //       window.location.href = 'http://localhost:8080/login';
-  //     }
-  //   })
-  //   .catch(error => {
-  //     // Handle any errors that occurred during the fetch
-  //     console.error('Error:', error);
-  //   });
-  // }
+  const isUserLogged = (id) => {
+    fetch(`http://localhost:8080/exercises/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // Add any other headers as needed
+      },
+      credentials: 'include' // Include cookies in the request
+    })
+    .then(response => {
+      if (response.status === 401) {
+        // Unauthorized, redirect to login page
+        window.location.href = 'http://localhost:8080/login';
+      }
+    })
+    .catch(error => {
+      // Handle any errors that occurred during the fetch
+      console.error('Error:', error);
+    });
+  }
 
   if (loading) {
     return (
