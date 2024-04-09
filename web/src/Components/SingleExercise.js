@@ -33,9 +33,8 @@ const SingleExercise = () => {
     const getResponse = async () => {
         setInputClicked(true);
         const requestData = {
-            exercise_id: Number(id),
             user_id: 1,
-            generate_text: genText
+            gen_text: genText
         };
         try {
             const response = await fetch(`http://localhost:8080/exercises/${id}`, {
