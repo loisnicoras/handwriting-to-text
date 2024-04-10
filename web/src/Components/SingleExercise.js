@@ -7,6 +7,7 @@ const SingleExercise = () => {
     const [genText, setGenText] = useState("");
     const [score, setScore] = useState(0)
     const [inputClicked, setInputClicked] = useState(false);
+    const [error, setError] = useState(null);
 
     const handleFileChange = async (event) => {
         const formData = new FormData();
@@ -17,12 +18,12 @@ const SingleExercise = () => {
                 body: formData
             });
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Failed to extract text');
             }
             const data = await response.json(); // assuming the response is plain text
             setGenText(data.text);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            setError(error.message);
         }
     };
 
@@ -30,10 +31,9 @@ const SingleExercise = () => {
         setGenText(event.target.value);
     };
 
-    const getResponse = async () => {
+    const submitExercise = async () => {
         setInputClicked(true);
         const requestData = {
-            user_id: 1,
             gen_text: genText
         };
         try {
@@ -46,12 +46,12 @@ const SingleExercise = () => {
                 body: JSON.stringify(requestData)
             });
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Failed to submit exercise');
             }
             const data = await response.json();
             setScore(data)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            setError(error.message);
         }
     }
 
@@ -66,24 +66,32 @@ const SingleExercise = () => {
                 method: "GET",
                 credentials: "include", 
             });
-            console.log(response)
+
             if (!response.ok) {
                 if (response.status === 401) {
                     window.location.href = 'http://localhost:8080/login'
-                    return;
                 } else {
-                    throw new Error('Network response was not ok');
+                    throw new Error('Failed to fetch exercise');
                 }
             }
             const data = await response.json();
             setExercise(data);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            setError(error.message);
         }
     }
     
+    if (error) {
+        return (
+            <div>
+                <Link to={`/`}>back</Link>
+                <div>Error: {error}</div>
+            </div>
+        );
+    }
+
     if (!exercise) {
-        return <div>Loading...</div>
+        return <div>Loading exercise...</div>
     }
 
     return (
@@ -98,14 +106,13 @@ const SingleExercise = () => {
             <br />
             <textarea value={genText} onChange={handleChange} rows={10} cols={50} />
             <br />
-            <input type="submit" onClick={getResponse}/>
+            <input type="submit" onClick={submitExercise}/>
             {(() => {
-                if (inputClicked && score == 0) {
+                if (inputClicked && score === 0) {
                     return <div>Loading score...</div>
                 }
-                
-                if (score != 0) {
-                    return <p> This is your score: {score}</p>
+                if (score !== 0) {
+                    return <p>This is your score: {score}</p>
                 }
             })()}
         </div>
