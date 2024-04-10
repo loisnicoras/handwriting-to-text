@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 
 	"cloud.google.com/go/vertexai/genai"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 )
 
 type SafetyRating struct {
@@ -29,7 +32,22 @@ type Candidate struct {
 
 func CalculateScore(correctText, genText, projectId, region string) (int, error) {
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, projectId, region)
+	// f, err := os.Open("moonlit-shadow-325207-72e8674d169e.json")
+	// if err != nil {
+	// 	log.Fatalf("unable to read file: %v", err)
+	// }
+	// buf := make([]byte, 1024)
+	// fmt.Print(f.Read(buf))
+	jsonKey, err := ioutil.ReadFile("../api/moonlit-shadow-325207-72e8674d169e.json")
+	if err != nil {
+		return 0, fmt.Errorf("Failed to read JSON: %w", err)
+	}
+	creds, err := google.CredentialsFromJSON(ctx, jsonKey, "https://www.googleapis.com/auth/cloud-platform")
+	if err != nil {
+		return 0, fmt.Errorf("Failed get credential from JSON: %w", err)
+	}
+
+	client, err := genai.NewClient(ctx, projectId, region, option.WithCredentials(creds))
 	if err != nil {
 		return 0, fmt.Errorf("Failed create new client: %w", err)
 	}
