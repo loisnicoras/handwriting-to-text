@@ -108,7 +108,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 			return
 		}
 
-		userID, ok := session.Values["userID"].(string)
+		sub, ok := session.Values["userID"].(string)
 		if !ok {
 			http.Error(w, "User ID not found in session", http.StatusBadRequest)
 			return
@@ -140,8 +140,8 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO users_results (user_id, exercise_id, photo_text, generate_text, result) VALUES (?, ?, ?, ?, ?)",
-			userID, exerciseID, "", reqBody.GenText, score)
+		_, err = db.Exec("INSERT INTO users_results (sub, exercise_id, photo_text, gen_text, result) VALUES (?, ?, ?, ?, ?)",
+			sub, exerciseID, "", reqBody.GenText, score)
 		if err != nil {
 			log.Printf("Error inserting data: %v", err)
 			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)

@@ -87,7 +87,7 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		session.Values["userID"] = userInfo["sub"].(string)
+		session.Values["sub"] = userInfo["sub"].(string)
 
 		err = session.Save(r, w)
 		if err != nil {
@@ -156,7 +156,7 @@ func GetUserData(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		userID, ok := session.Values["userID"].(string)
+		sub, ok := session.Values["sub"].(string)
 		if !ok {
 			http.Error(w, "User ID not found in session", http.StatusBadRequest)
 			return
@@ -165,7 +165,7 @@ func GetUserData(db *sql.DB) http.HandlerFunc {
 		query := "SELECT name, email, avatar_url FROM users WHERE sub = ?"
 		var name, email, avatarURL string
 
-		err = db.QueryRow(query, userID).Scan(&name, &email, &avatarURL)
+		err = db.QueryRow(query, sub).Scan(&name, &email, &avatarURL)
 		if err != nil {
 			http.Error(w, "Failed to retrieve avatar URL from database", http.StatusInternalServerError)
 			return

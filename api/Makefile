@@ -20,8 +20,8 @@ dropdb:
 	@docker exec -i mysql-container mysql -u $(MYSQL_USER) -p -e "DROP DATABASE $(MYSQL_DATABASE);"
 
 removemysql:
-	@sudo docker stop mysql-container
-	@sudo docker rm mysql-container
+	@docker stop mysql-container
+	@docker rm mysql-container
 	
 run:
 	@go run main.go --addr=$(SERVER_ADDR) \
