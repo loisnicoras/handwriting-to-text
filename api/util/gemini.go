@@ -53,7 +53,8 @@ func CalculateScore(correctText, genText, projectId, region string) (int, error)
 	}
 	gemini := client.GenerativeModel("gemini-pro-vision")
 
-	prompt := genai.Text("Can you give me a score (just the score no more words) that is between 0-100 from comparing the first text with the second. First is the correct text. The correct text is: " + correctText + " The incorrect text is " + genText)
+	fmt.Print(correctText, genText)
+	prompt := genai.Text("Can you give me a score (just the score no more words) that is between 0-100 from comparing the first text with the second. If exist lack words in the second text the score will be with 2% lower for every missing word. First is the correct text. The correct text is: " + correctText + " The incorrect text is: " + genText)
 	resp, err := gemini.GenerateContent(ctx, prompt)
 	if err != nil {
 		return 0, fmt.Errorf("Failed to generate content: %w", err)
@@ -73,7 +74,7 @@ func CalculateScore(correctText, genText, projectId, region string) (int, error)
 
 	// Access the "Parts" data from the first candidate
 	parts := response.Candidates[0].Content.Parts
-
+	fmt.Print(parts[0])
 	// Convert the string value to float64
 	floatValue, err := strconv.ParseFloat(parts[0], 64)
 	if err != nil {
