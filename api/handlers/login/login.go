@@ -14,7 +14,9 @@ import (
 var (
 	googleOauthConfig *oauth2.Config
 	oauthStateString  = "random"
+	userInfo          = "https://www.googleapis.com/oauth2/v3/userinfo"
 	store             = sessions.NewCookieStore([]byte("your-secret-key"))
+	webUrl            = "http://localhost:3000"
 )
 
 func init() {
@@ -28,16 +30,16 @@ func init() {
 }
 
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
-	origin := r.Header.Get("Origin")
-	w.Header().Set("Access-Control-Allow-Origin", origin)
+	// origin := r.Header.Get("Origin")
+	// w.Header().Set("Access-Control-Allow-Origin", origin)
 	url := googleOauthConfig.AuthCodeURL(oauthStateString)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-		w.Header().Set("Access-Control-Allow-Origin", origin)
+		// origin := r.Header.Get("Origin")
+		// w.Header().Set("Access-Control-Allow-Origin", origin)
 		state := r.FormValue("state")
 		if state != oauthStateString {
 			http.Error(w, "Invalid state parameter", http.StatusBadRequest)
@@ -94,7 +96,7 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 			http.Error(w, "Error saving session", http.StatusInternalServerError)
 		}
 
-		http.Redirect(w, r, "http://localhost:3000/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, webUrl, http.StatusTemporaryRedirect)
 	}
 }
 
@@ -123,16 +125,15 @@ func LogOut(db *sql.DB) http.HandlerFunc {
 		// 	http.Error(w, "Failed to delete user", http.StatusInternalServerError)
 		// }
 
-		http.Redirect(w, r, "http://localhost:3000/", http.StatusSeeOther)
+		http.Redirect(w, r, webUrl, http.StatusSeeOther)
 	}
 }
 
 func AuthMiddleware(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-		w.Header().Set("Access-Control-Allow-Origin", origin)
+		// origin := r.Header.Get("Origin")
+		// w.Header().Set("Access-Control-Allow-Origin", origin)
 		if !isUserLoggedIn(r) {
-			// http.Redirect(w, r, "/login", http.StatusSeeOther)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -142,8 +143,8 @@ func AuthMiddleware(next http.Handler) http.HandlerFunc {
 
 func GetUserData(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-		w.Header().Set("Access-Control-Allow-Origin", origin)
+		// origin := r.Header.Get("Origin")
+		// w.Header().Set("Access-Control-Allow-Origin", origin)
 
 		if !isUserLoggedIn(r) {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -195,13 +196,13 @@ func isUserLoggedIn(r *http.Request) bool {
 		return false
 	}
 
-	userID, ok := session.Values["userID"].(string)
+	userID, ok := session.Values["sub"].(string)
 	return ok && userID != ""
 }
 
 func fetchGoogleUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
 	client := googleOauthConfig.Client(context.Background(), token)
-	response, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
+	response, err := client.Get(userInfo)
 	if err != nil {
 		return nil, err
 	}

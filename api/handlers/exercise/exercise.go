@@ -108,7 +108,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 			return
 		}
 
-		sub, ok := session.Values["userID"].(string)
+		sub, ok := session.Values["sub"].(string)
 		if !ok {
 			http.Error(w, "User ID not found in session", http.StatusBadRequest)
 			return
