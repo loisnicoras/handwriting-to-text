@@ -24,30 +24,8 @@ function ExerciseList() {
     } finally {
       setLoading(false);
     }
-
   };
   
-  const isUserLogged = (id) => {
-    fetch(`http://localhost:8080/exercises/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // Add any other headers as needed
-      },
-      credentials: 'include' // Include cookies in the request
-    })
-    .then(response => {
-      if (response.status === 401) {
-        // Unauthorized, redirect to login page
-        window.location.href = 'http://localhost:8080/login';
-      }
-    })
-    .catch(error => {
-      // Handle any errors that occurred during the fetch
-      console.error('Error:', error);
-    });
-  }
-
   if (loading) {
     return (
       <div>
@@ -78,7 +56,10 @@ function ExerciseList() {
       <ul>
         {jsonData.map((item, index) => (
           <li key={item.id}>
-            <Link to={`/exercises/${item.id}`}>{item.name}</Link>
+            <Link 
+              to={`/exercises/${item.id}`}> 
+              {item.name}
+            </Link>
           </li>
         ))}
       </ul>

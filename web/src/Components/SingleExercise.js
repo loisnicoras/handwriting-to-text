@@ -8,6 +8,7 @@ const SingleExercise = () => {
     const [score, setScore] = useState(0)
     const [inputClicked, setInputClicked] = useState(false);
     const [error, setError] = useState(null);
+    const [loggedIn, setLoggedIn] = useState(true); 
 
     const handleFileChange = async (event) => {
         const formData = new FormData();
@@ -20,7 +21,7 @@ const SingleExercise = () => {
             if (!response.ok) {
                 throw new Error('Failed to extract text');
             }
-            const data = await response.json(); // assuming the response is plain text
+            const data = await response.json();
             setGenText(data.text);
         } catch (error) {
             setError(error.message);
@@ -68,12 +69,10 @@ const SingleExercise = () => {
             });
 
             if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = 'http://localhost:8080/login'
-                } else {
-                    throw new Error('Failed to fetch exercise');
-                }
+                setLoggedIn(false); 
+                throw new Error('Failed to fetch exercise');
             }
+
             const data = await response.json();
             setExercise(data);
         } catch (error) {
@@ -89,6 +88,11 @@ const SingleExercise = () => {
     //         </div>
     //     );
     // }
+
+    if (!loggedIn) {
+        window.location.href = "http://localhost:8080/login";
+        return null; 
+    }
 
     if (!exercise) {
         return <div>Loading exercise...</div>
