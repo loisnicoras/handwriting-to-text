@@ -81,14 +81,14 @@ const SingleExercise = () => {
         }
     }
     
-    if (error) {
-        return (
-            <div>
-                <Link to={`/`}>back</Link>
-                <div>Error: {error}</div>
-            </div>
-        );
-    }
+    // if (error) {
+    //     return (
+    //         <div>
+    //             <Link to={`/`}>back</Link>
+    //             <div>Error: {error}</div>
+    //         </div>
+    //     );
+    // }
 
     if (!exercise) {
         return <div>Loading exercise...</div>
