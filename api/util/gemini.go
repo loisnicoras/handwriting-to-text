@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+	"strings"
 
 	"cloud.google.com/go/vertexai/genai"
 	"golang.org/x/oauth2/google"
@@ -32,16 +33,11 @@ type Candidate struct {
 
 func CalculateScore(correctText, genText, projectId, region string) (int, error) {
 	ctx := context.Background()
-	// f, err := os.Open("moonlit-shadow-325207-72e8674d169e.json")
-	// if err != nil {
-	// 	log.Fatalf("unable to read file: %v", err)
-	// }
-	// buf := make([]byte, 1024)
-	// fmt.Print(f.Read(buf))
 	jsonKey, err := ioutil.ReadFile("../api/moonlit-shadow-325207-72e8674d169e.json")
 	if err != nil {
 		return 0, fmt.Errorf("Failed to read JSON: %w", err)
 	}
+
 	creds, err := google.CredentialsFromJSON(ctx, jsonKey, "https://www.googleapis.com/auth/cloud-platform")
 	if err != nil {
 		return 0, fmt.Errorf("Failed get credential from JSON: %w", err)
@@ -51,10 +47,21 @@ func CalculateScore(correctText, genText, projectId, region string) (int, error)
 	if err != nil {
 		return 0, fmt.Errorf("Failed create new client: %w", err)
 	}
+
 	gemini := client.GenerativeModel("gemini-pro-vision")
 
-	fmt.Print(correctText, genText)
-	prompt := genai.Text("Can you give me a score (just the score no more words) that is between 0-100 from comparing the first text with the second. If exist lack words in the second text the score will be with 2% lower for every missing word. First is the correct text. The correct text is: " + correctText + " The incorrect text is: " + genText)
+	corText := genai.Text(correctText)
+	incorrectText := genai.Text(genText)
+
+	words := strings.Fields(string(correctText))
+	numWords := len(words)
+
+	scoreForWrongWord := ((1 * 100) / numWords) / 2
+	
+	scoreForOneWord := genai.Text(strconv.Itoa((1 * 100) / numWords))
+	wrongWord := genai.Text(strconv.Itoa(scoreForWrongWord))
+
+	prompt := genai.Text("Could you provide a score (the final score, just score without any words) to assess the similarity between two texts, ranging from 0 to 100? 1. Calculate the points deducted for missing words in the second text that exist in the first text. 2. Calculate the points deducted for extra words in the second text that does not exist in the first text. 3. Calculate the points deducted for missing or extra letters in each word of the second text you need to calculate the points deducted for missing or extra letters in each word of the second text. 4. Sum up all the deducted points to get the total points deducted. And give me an integer number. 5. Subtract the total points deducted from 100 to get the final score. All points deducted will be integers. The scoring should consider the following criteria: 1. Compare each word from the second text with the corresponding word from the first text. 2. Deduct " + wrongWord + " points from the total score for missing/extra letters in each word of the second text compared to the first. 3. Deduct " + scoreForOneWord + " points from the total score for missing words in the second text that exist in the first text. 4. Deduct " + scoreForOneWord + " points from the total score for extra words in the second text. The correct text is: `" + corText + "`. The incorrect text is: `" + incorrectText + "`. Give me just the final score")
 	resp, err := gemini.GenerateContent(ctx, prompt)
 	if err != nil {
 		return 0, fmt.Errorf("Failed to generate content: %w", err)
@@ -74,7 +81,7 @@ func CalculateScore(correctText, genText, projectId, region string) (int, error)
 
 	// Access the "Parts" data from the first candidate
 	parts := response.Candidates[0].Content.Parts
-	fmt.Print(parts[0])
+	
 	// Convert the string value to float64
 	floatValue, err := strconv.ParseFloat(parts[0], 64)
 	if err != nil {
