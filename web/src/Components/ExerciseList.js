@@ -13,7 +13,8 @@ function ExerciseList() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch("http://localhost:8080/exercises/");
+      const response = await fetch("http://localhost:8080/exercises/audio-exercises/");
+      console.log(response)
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -57,7 +58,7 @@ function ExerciseList() {
         {jsonData.map((item, index) => (
           <li key={item.id}>
             <Link 
-              to={`/exercises/${item.id}`}> 
+              to={`/exercises/audio-exercises/${item.id}`}> 
               {item.name}
             </Link>
           </li>

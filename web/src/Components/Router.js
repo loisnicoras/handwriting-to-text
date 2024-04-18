@@ -6,8 +6,8 @@ function AppRouter() {
     return (
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={ <ExerciseList/> } />
-            <Route path="/exercises/:id" element={ <SingleExercise/> } />
+            <Route path="/exercises/audio-exercises/" element={ <ExerciseList/> } />
+            <Route path="/exercises/audio-exercises/:id" element={ <SingleExercise/> } />
           </Routes>
         </BrowserRouter>
     )

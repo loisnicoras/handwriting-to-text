@@ -38,7 +38,7 @@ const SingleExercise = () => {
             gen_text: genText
         };
         try {
-            const response = await fetch(`http://localhost:8080/exercises/${id}`, {
+            const response = await fetch(`http://localhost:8080/exercises/audio-exercises/${id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -63,7 +63,7 @@ const SingleExercise = () => {
 
     const fetchExercise = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/exercises/${id}`, {
+            const response = await fetch(`http://localhost:8080/exercises/audio-exercises/${id}`, {
                 method: "GET",
                 credentials: "include", 
             });
@@ -100,7 +100,7 @@ const SingleExercise = () => {
 
     return (
         <div>
-            <Link to={`/`}>back</Link>
+            <Link to={`/exercises/audio-exercises`}>back</Link>
             <p>{exercise.name}</p>
             <audio controls src={exercise.audio_path}>
                 Your browser does not support the
