@@ -22,7 +22,7 @@ func GetExercise(db *sql.DB) http.HandlerFunc {
 		exerciseID := chi.URLParam(r, "exerciseID")
 		var exercise Exercise
 
-		preparedQuery, err := db.Prepare("SELECT id, exercise_name, audio_path FROM exercises WHERE id = ?")
+		preparedQuery, err := db.Prepare("SELECT id, exercise_name, audio_path FROM audio_exercises WHERE id = ?")
 		if err != nil {
 			log.Printf("Error preparing query: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -60,10 +60,10 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 		origin := r.Header.Get("Origin")
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 
-		rows, err := db.Query("SELECT id, exercise_name FROM exercises")
+		rows, err := db.Query("SELECT id, exercise_name FROM audio_exercises")
 		if err != nil {
-			log.Printf("Error retrieving exercises: %v", err)
-			http.Error(w, "Failed to get exercises", http.StatusInternalServerError)
+			log.Printf("Error retrieving audio_exercises: %v", err)
+			http.Error(w, "Failed to get audio_exercises", http.StatusInternalServerError)
 			return
 		}
 		defer rows.Close()
@@ -115,7 +115,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 		}
 
 		exerciseID := chi.URLParam(r, "exerciseID")
-		query := "SELECT id, text FROM exercises WHERE id = ?"
+		query := "SELECT id, text FROM audio_exercises WHERE id = ?"
 		row := db.QueryRow(query, exerciseID)
 
 		var exercise Exercise
@@ -140,11 +140,11 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO users_results (sub, exercise_id, photo_text, gen_text, result) VALUES (?, ?, ?, ?, ?)",
+		_, err = db.Exec("INSERT INTO audio_results (sub, exercise_id, photo_text, gen_text, result) VALUES (?, ?, ?, ?, ?)",
 			sub, exerciseID, "", reqBody.GenText, score)
 		if err != nil {
 			log.Printf("Error inserting data: %v", err)
-			http.Error(w, "Failed to insert data into users_results table", http.StatusInternalServerError)
+			http.Error(w, "Failed to insert data into audio_results table", http.StatusInternalServerError)
 			return
 		}
 
