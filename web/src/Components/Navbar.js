@@ -33,18 +33,29 @@ function Navbar() {
 
     if (!isLogged) {
         return (
-            <nav>
-                <a href="http://localhost:8080/login">Login</a>
+            <nav class="navbar">
+                <div class="navbar-brand">
+                    <span class="company-name">YourCompany</span>
+                </div>
+                <div class="navbar-links">
+                    <a href="http://localhost:8080/login" class="login-button">Login</a>
+                </div>
             </nav>
         );
     }
 
     return (
-        <nav>
-            <p>{userName}</p>
-            <img src={userAvatarUrl} alt="Logo" />
-            <br />
-            <a href="http://localhost:8080/logout">Logout</a>
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <span class="company-name">YourCompany</span>
+            </div>
+            <div class="navbar-links">
+                <div class="user-info">
+                    <img src={userAvatarUrl} alt="User Icon" class="user-icon" />
+                    <span class="username">{userName}</span>
+                </div>
+                <a href="http://localhost:8080/logout" class="logout-button">Logout</a>
+            </div>
         </nav>
     );
 }
