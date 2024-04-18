@@ -20,7 +20,7 @@ func GetExercise(db *sql.DB) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 
 		exerciseID := chi.URLParam(r, "exerciseID")
-		var exercise Exercise
+		var exercise AudioExercise
 
 		preparedQuery, err := db.Prepare("SELECT id, exercise_name, audio_path FROM audio_exercises WHERE id = ?")
 		if err != nil {
@@ -68,10 +68,10 @@ func GetExercises(db *sql.DB) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		var exercises []Exercise
+		var exercises []AudioExercise
 
 		for rows.Next() {
-			var exercise Exercise
+			var exercise AudioExercise
 			err := rows.Scan(&exercise.ID, &exercise.Name)
 			if err != nil {
 				log.Printf("Error scanning row: %v", err)
@@ -118,7 +118,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 		query := "SELECT id, text FROM audio_exercises WHERE id = ?"
 		row := db.QueryRow(query, exerciseID)
 
-		var exercise Exercise
+		var exercise AudioExercise
 		err = row.Scan(&exercise.ID, &exercise.Text)
 		if err != nil {
 			log.Printf("Error retrieving exercise: %v", err)
@@ -126,7 +126,7 @@ func SubmitExercise(db *sql.DB, projectId, region string) http.HandlerFunc {
 			return
 		}
 
-		var reqBody SubmitExerciseRequest
+		var reqBody SubmitAudioExerciseRequest
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 			log.Printf("Error decoding JSON: %v", err)
 			http.Error(w, "Bad Request", http.StatusBadRequest)

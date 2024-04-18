@@ -68,9 +68,11 @@ func main() {
 	r.Post("/extract-text", upload.UploadHandler(apiKey))
 
 	r.Route("/exercises", func(r chi.Router) {
-		r.Get("/", exercise.GetExercises(db))
-		r.Get("/{exerciseID}", login.AuthMiddleware(exercise.GetExercise(db)))
-		r.Post("/{exerciseID}", login.AuthMiddleware(exercise.SubmitExercise(db, *projectId, *region)))
+		r.Get("/audio-exercises/", exercise.GetExercises(db))
+		r.Get("/audio-exercises/{exerciseID}", login.AuthMiddleware(exercise.GetExercise(db)))
+		r.Post("/audio-exercises/{exerciseID}", login.AuthMiddleware(exercise.SubmitExercise(db, *projectId, *region)))
+
+		r.Get("/vowels-exercises", exercise.GetVowelsExercises(db))
 	})
 
 	fmt.Printf("Server is running at http://localhost:%s\n", *addr)
