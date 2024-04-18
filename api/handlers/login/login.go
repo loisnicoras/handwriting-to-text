@@ -27,19 +27,21 @@ func init() {
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
 		Endpoint:     google.Endpoint,
 	}
+
+	store.Options.MaxAge = 36000
 }
 
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
-	// origin := r.Header.Get("Origin")
-	// w.Header().Set("Access-Control-Allow-Origin", origin)
+	origin := r.Header.Get("Origin")
+	w.Header().Set("Access-Control-Allow-Origin", origin)
 	url := googleOauthConfig.AuthCodeURL(oauthStateString)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// origin := r.Header.Get("Origin")
-		// w.Header().Set("Access-Control-Allow-Origin", origin)
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
 		state := r.FormValue("state")
 		if state != oauthStateString {
 			http.Error(w, "Invalid state parameter", http.StatusBadRequest)
@@ -102,6 +104,9 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 
 func LogOut(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+
 		session, err := store.Get(r, "session-name")
 
 		if err != nil {
@@ -131,8 +136,8 @@ func LogOut(db *sql.DB) http.HandlerFunc {
 
 func AuthMiddleware(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// origin := r.Header.Get("Origin")
-		// w.Header().Set("Access-Control-Allow-Origin", origin)
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
 		if !isUserLoggedIn(r) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -143,8 +148,8 @@ func AuthMiddleware(next http.Handler) http.HandlerFunc {
 
 func GetUserData(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// origin := r.Header.Get("Origin")
-		// w.Header().Set("Access-Control-Allow-Origin", origin)
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
 
 		if !isUserLoggedIn(r) {
 			w.WriteHeader(http.StatusUnauthorized)
