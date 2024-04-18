@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -16,7 +18,7 @@ var (
 	oauthStateString  = "random"
 	userInfo          = "https://www.googleapis.com/oauth2/v3/userinfo"
 	store             = sessions.NewCookieStore([]byte("your-secret-key"))
-	webUrl            = "http://localhost:3000"
+	webURL            = "http://localhost:3000"
 )
 
 func init() {
@@ -57,80 +59,33 @@ func HandleGoogleCallback(db *sql.DB) http.HandlerFunc {
 
 		userInfo, err := fetchGoogleUserInfo(token)
 		if err != nil {
+			log.Println("Error fetching user info:", err)
 			http.Error(w, "Error fetching user info", http.StatusInternalServerError)
 			return
 		}
 
-		// Check if the user is already registered
-		var existingUser User
-		err = db.QueryRow("SELECT id, sub, email, name, avatar_url FROM users WHERE sub=?", userInfo["sub"]).Scan(
-			&existingUser.ID,
-			&existingUser.Sub,
-			&existingUser.Email,
-			&existingUser.Name,
-			&existingUser.AvatarURL,
-		)
-
-		if err == sql.ErrNoRows {
-			// If the user is not registered, insert a new user
-			_, err = db.Exec("INSERT INTO users (sub, email, name, avatar_url) VALUES (?, ?, ?, ?)",
-				userInfo["sub"], userInfo["email"], userInfo["name"], userInfo["picture"])
-			if err != nil {
-				http.Error(w, "Error creating new user", http.StatusInternalServerError)
-				return
-			}
-		} else if err != nil {
-			http.Error(w, "Error checking existing user", http.StatusInternalServerError)
+		err = handleUser(db, userInfo)
+		if err != nil {
+			http.Error(w, "Error handling user", http.StatusInternalServerError)
+			log.Println("Error handling user:", err)
 			return
 		}
 
-		// Set user info in session (you can replace this with a JWT or any other session mechanism)
-		session, err := store.Get(r, "session-name")
-		if err != nil {
-			http.Error(w, "Error creating session", http.StatusInternalServerError)
-			return
-		}
+		setSession(w, r, userInfo)
 
-		session.Values["sub"] = userInfo["sub"].(string)
-
-		err = session.Save(r, w)
-		if err != nil {
-			http.Error(w, "Error saving session", http.StatusInternalServerError)
-		}
-
-		http.Redirect(w, r, webUrl, http.StatusTemporaryRedirect)
+		http.Redirect(w, r, webURL, http.StatusTemporaryRedirect)
 	}
 }
 
+// LogOut handles user logout
 func LogOut(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 
-		session, err := store.Get(r, "session-name")
+		clearSession(w, r)
 
-		if err != nil {
-			http.Error(w, "Failed to retrieve session", http.StatusInternalServerError)
-			return
-		}
-
-		// Clear all session data
-		session.Options.MaxAge = -1
-		err = session.Save(r, w)
-		if err != nil {
-			http.Error(w, "Failed to save session", http.StatusInternalServerError)
-			return
-		}
-
-		// sub := session.Values["userID"]
-		// query := "DELETE FROM users WHERE sub = ?"
-
-		// _, err = db.Exec(query, sub)
-		// if err != nil {
-		// 	http.Error(w, "Failed to delete user", http.StatusInternalServerError)
-		// }
-
-		http.Redirect(w, r, webUrl, http.StatusSeeOther)
+		http.Redirect(w, r, webURL, http.StatusSeeOther)
 	}
 }
 
@@ -156,53 +111,30 @@ func GetUserData(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		session, err := store.Get(r, "session-name")
+		userInfo, err := getUserInfoFromSession(r)
 		if err != nil {
-			http.Error(w, "Failed to retrieve session", http.StatusInternalServerError)
+			http.Error(w, "Failed to retrieve user info from session", http.StatusInternalServerError)
+			log.Println("Failed to retrieve user info from session:", err)
 			return
 		}
 
-		sub, ok := session.Values["sub"].(string)
-		if !ok {
-			http.Error(w, "User ID not found in session", http.StatusBadRequest)
-			return
-		}
-
-		query := "SELECT name, email, avatar_url FROM users WHERE sub = ?"
-		var name, email, avatarURL string
-
-		err = db.QueryRow(query, sub).Scan(&name, &email, &avatarURL)
+		userData, err := getUserDataFromDB(db, userInfo["sub"].(string))
 		if err != nil {
-			http.Error(w, "Failed to retrieve avatar URL from database", http.StatusInternalServerError)
+			http.Error(w, "Failed to retrieve user data from database", http.StatusInternalServerError)
+			log.Println("Failed to retrieve user data from database:", err)
 			return
 		}
 
-		user := User{
-			Name:      name,
-			Email:     email,
-			AvatarURL: avatarURL,
-		}
-
-		jsonData, err := json.Marshal(user)
+		jsonData, err := json.Marshal(userData)
 		if err != nil {
 			http.Error(w, "Failed to marshal JSON response", http.StatusInternalServerError)
+			log.Println("Failed to marshal JSON response:", err)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(jsonData)
 	}
-}
-
-func isUserLoggedIn(r *http.Request) bool {
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		// Handle the error as needed, e.g., log it or return false
-		return false
-	}
-
-	userID, ok := session.Values["sub"].(string)
-	return ok && userID != ""
 }
 
 func fetchGoogleUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
@@ -220,4 +152,98 @@ func fetchGoogleUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
 	}
 
 	return userInfo, nil
+}
+
+// handleUser checks if the user is registered and inserts if not
+func handleUser(db *sql.DB, userInfo map[string]interface{}) error {
+	// Check if the user is already registered
+	var existingUser User
+	err := db.QueryRow("SELECT id, sub, email, name, avatar_url FROM users WHERE sub=?", userInfo["sub"]).Scan(
+		&existingUser.ID,
+		&existingUser.Sub,
+		&existingUser.Email,
+		&existingUser.Name,
+		&existingUser.AvatarURL,
+	)
+
+	if err == sql.ErrNoRows {
+		// If the user is not registered, insert a new user
+		_, err = db.Exec("INSERT INTO users (sub, email, name, avatar_url) VALUES (?, ?, ?, ?)",
+			userInfo["sub"], userInfo["email"], userInfo["name"], userInfo["picture"])
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// setSession sets user info in session
+func setSession(w http.ResponseWriter, r *http.Request, userInfo map[string]interface{}) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Error creating session:", err)
+		return
+	}
+
+	session.Values["sub"] = userInfo["sub"].(string)
+
+	err = session.Save(r, w)
+	if err != nil {
+		log.Println("Error saving session:", err)
+	}
+}
+
+func clearSession(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Error retrieving session:", err)
+		return
+	}
+
+	session.Options.MaxAge = -1
+	err = session.Save(r, w)
+	if err != nil {
+		log.Println("Error saving session:", err)
+	}
+}
+
+func isUserLoggedIn(r *http.Request) bool {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		// Handle the error as needed, e.g., log it or return false
+		return false
+	}
+
+	userID, ok := session.Values["sub"].(string)
+	return ok && userID != ""
+}
+
+// getUserInfoFromSession retrieves user info from session
+func getUserInfoFromSession(r *http.Request) (map[string]interface{}, error) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		return nil, err
+	}
+
+	userInfo, ok := session.Values["sub"].(string)
+	if !ok || userInfo == "" {
+		return nil, errors.New("user ID not found in session")
+	}
+
+	return map[string]interface{}{"sub": userInfo}, nil
+}
+
+// getUserDataFromDB retrieves user data from the database
+func getUserDataFromDB(db *sql.DB, sub string) (User, error) {
+	var user User
+	query := "SELECT name, email, avatar_url FROM users WHERE sub = ?"
+	err := db.QueryRow(query, sub).Scan(&user.Name, &user.Email, &user.AvatarURL)
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
 }
