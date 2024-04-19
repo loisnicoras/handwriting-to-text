@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS my_database;
 -- Use the database
 USE my_database;
 
--- Create the exercises table
+-- Create the audio_exercises table
 CREATE TABLE IF NOT EXISTS audio_exercises (
     id INT AUTO_INCREMENT PRIMARY KEY,
     exercise_name VARCHAR(255),
@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS audio_exercises (
 CREATE TABLE IF NOT EXISTS vowels_exercises (
     id INT AUTO_INCREMENT PRIMARY KEY,
     exercise_name VARCHAR(255),
+    vowel VARCHAR(5),
+    -- correct_text VARCHAR(10000),
     text VARCHAR(10000)
 );
 
@@ -27,7 +29,7 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_url VARCHAR(255)
 );
 
--- Create the users_results table
+-- Create the audio_results table
 CREATE TABLE IF NOT EXISTS audio_results (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sub VARCHAR(255) NOT NULL,

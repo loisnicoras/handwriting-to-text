@@ -72,7 +72,8 @@ func main() {
 		r.Get("/audio-exercises/{exerciseID}", login.AuthMiddleware(exercise.GetExercise(db)))
 		r.Post("/audio-exercises/{exerciseID}", login.AuthMiddleware(exercise.SubmitExercise(db, *projectId, *region)))
 
-		r.Get("/vowels-exercises", exercise.GetVowelsExercises(db))
+		r.Get("/vowels-exercises/", exercise.GetVowelsExercises(db))
+		r.Get("/vowels-exercises/{exerciseID}", login.AuthMiddleware(exercise.GetVowelsExercise(db)))
 	})
 
 	fmt.Printf("Server is running at http://localhost:%s\n", *addr)

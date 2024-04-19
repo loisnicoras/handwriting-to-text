@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi"
 )
 
 func GetVowelsExercises(db *sql.DB) http.HandlerFunc {
@@ -45,6 +47,47 @@ func GetVowelsExercises(db *sql.DB) http.HandlerFunc {
 		_, err = w.Write(exercisesJSON)
 		if err != nil {
 			http.Error(w, "Error writing response:", http.StatusInternalServerError)
+		}
+	}
+}
+
+func GetVowelsExercise(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+
+		exerciseID := chi.URLParam(r, "exerciseID")
+		var exercise VowelsExercise
+
+		preparedQuery, err := db.Prepare("SELECT id, exercise_name, vowel, text, FROM vowels_exercises WHERE id = ?")
+		if err != nil {
+			log.Printf("Error preparing query: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		defer preparedQuery.Close()
+
+		row := preparedQuery.QueryRow(exerciseID)
+		err = row.Scan(&exercise.ID, &exercise.Name, &exercise.Vowel, &exercise.Text)
+		if err != nil {
+			log.Printf("Error retrieving exercise: %v", err)
+			http.Error(w, "Exercise not found", http.StatusNotFound)
+			return
+		}
+
+		exerciseJSON, err := json.Marshal(exercise)
+		if err != nil {
+			log.Printf("Error marshaling JSON: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write(exerciseJSON)
+		if err != nil {
+			log.Printf("Error writing response: %v", err)
 		}
 	}
 }

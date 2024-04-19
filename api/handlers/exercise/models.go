@@ -8,11 +8,13 @@ type AudioExercise struct {
 }
 
 type SubmitAudioExerciseRequest struct {
-	GenText    string `json:"gen_text"`
+	GenText string `json:"gen_text"`
 }
 
 type VowelsExercise struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	Text      string `json:"text"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Vowel       string `json:"vowel"`
+	CorrectText string `json:"correct_text"`
+	Text        string `json:"text"`
 }
