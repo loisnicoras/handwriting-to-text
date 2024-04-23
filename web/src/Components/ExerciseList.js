@@ -53,6 +53,7 @@ function ExerciseList() {
 
   return (
     <div>
+      <Link to={`/`}>back</Link>
       <h1>Data from Go Server</h1>
       <ul>
         {jsonData.map((item, index) => (
