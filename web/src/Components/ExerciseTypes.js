@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 
 function ExerciseTypes(){
     return (
-        <Link to="/exercises/audio-exercises/">Audio exercise</Link>
+        <div>
+            <Link to="/exercises/audio-exercises/">Audio exercise</Link>
+            <br />
+            <Link to="/exercises/vowels-exercises/">Vowels exercise</Link>
+        </div>
     )
 }
 
