@@ -60,7 +60,7 @@ func GetVowelsExercise(db *sql.DB) http.HandlerFunc {
 		exerciseID := chi.URLParam(r, "exerciseID")
 		var exercise VowelsExercise
 
-		preparedQuery, err := db.Prepare("SELECT id, exercise_name, vowel, text, FROM vowels_exercises WHERE id = ?")
+		preparedQuery, err := db.Prepare("SELECT id, exercise_name, vowel, text FROM vowels_exercises WHERE id = ?")
 		if err != nil {
 			log.Printf("Error preparing query: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -129,15 +129,15 @@ func SubmitVowelExercise(db *sql.DB, projectId, region string) http.HandlerFunc 
 			return
 		}
 
-		score, err := util.CalculateScore(exercise.ComparisonText, reqBody.Text, projectId, region)
-		if err != nil {
-			log.Printf("Error calculating score: %v", err)
-			http.Error(w, "Failed to calculate score", http.StatusInternalServerError)
-			return
-		}
+		// score, err := util.CalculateScore(exercise.ComparisonText, reqBody.Text, projectId, region)
+		// if err != nil {
+		// 	log.Printf("Error calculating score: %v", err)
+		// 	http.Error(w, "Failed to calculate score", http.StatusInternalServerError)
+		// 	return
+		// }
 
 		_, err = db.Exec("INSERT INTO vowels_results (sub, exercise_id, text, result) VALUES (?, ?, ?, ?)",
-			sub, exerciseID, reqBody.Text, score)
+			sub, exerciseID, reqBody.Text, 100)
 		if err != nil {
 			log.Printf("Error inserting data: %v", err)
 			http.Error(w, "Failed to insert data into vowels_results table", http.StatusInternalServerError)
@@ -146,7 +146,7 @@ func SubmitVowelExercise(db *sql.DB, projectId, region string) http.HandlerFunc 
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(score); err != nil {
+		if err := json.NewEncoder(w).Encode(100); err != nil {
 			log.Printf("Error encoding JSON: %v", err)
 		}
 	}
