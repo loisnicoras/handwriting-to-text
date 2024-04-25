@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS vowels_exercises (
     id INT AUTO_INCREMENT PRIMARY KEY,
     exercise_name VARCHAR(255),
     vowel VARCHAR(5),
-    -- correct_text VARCHAR(10000),
+    comparison_text VARCHAR(1000),
     text VARCHAR(10000)
 );
 

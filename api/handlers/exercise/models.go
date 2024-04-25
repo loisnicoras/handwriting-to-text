@@ -15,6 +15,10 @@ type VowelsExercise struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Vowel       string `json:"vowel"`
-	CorrectText string `json:"correct_text"`
+	ComparisonText string `json:"comparison_text"`
 	Text        string `json:"text"`
+}
+
+type SubmitVowelExerciseRequest struct {
+	Text string `json:"gen_text"`
 }
