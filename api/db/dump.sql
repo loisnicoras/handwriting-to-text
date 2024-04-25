@@ -54,7 +54,7 @@ INSERT INTO audio_exercises (exercise_name, audio_path, text) VALUES
 ('Exercise 2', '/path/to/audio2.mp3', 'Text for exercise 2'),
 ('Exercise 3', '/path/to/audio3.mp3', 'Text for exercise 3');
 
-INSERT INTO vowels_exercises (exercise_name, text) VALUES
-('Exercise 1', 'Text for exercise 1'),
-('Exercise 2', 'Text for exercise 2'),
-('Exercise 3', 'Text for exercise 3');
+INSERT INTO vowels_exercises (exercise_name, vowel, comparison_text, text) VALUES
+('Exercise 1', "e", 'Text for exercise 1', 'Text for exercise 1'),
+('Exercise 2', "e", 'Text for exercise 2', 'Text for exercise 2'),
+('Exercise 3', "e", 'Text for exercise 3', 'Text for exercise 3');
